@@ -69,6 +69,20 @@ export default async function InvoiceDetailPage({
               <FinalizeButton id={invoice.id} />
             </>
           )}
+          <a
+            href={`/api/invoices/${invoice.id}/excel`}
+            className="rounded-md bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800"
+          >
+            Download Excel
+          </a>
+          <a
+            href={`/api/invoices/${invoice.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-md bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900"
+          >
+            Download PDF
+          </a>
           <DeleteInvoiceButton id={invoice.id} />
         </div>
       </div>

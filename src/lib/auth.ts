@@ -28,7 +28,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+          return null;
         }
 
         const user = await db.user.findUnique({
@@ -36,7 +36,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user) {
-          throw new Error("Invalid email or password");
+          return null;
         }
 
         const passwordMatch = await bcrypt.compare(
@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!passwordMatch) {
-          throw new Error("Invalid email or password");
+          return null;
         }
 
         return {
@@ -78,5 +78,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret:
+    process.env.NEXTAUTH_SECRET ??
+    (process.env.NODE_ENV === "development" ? "kohlico-dev-secret" : undefined),
 };

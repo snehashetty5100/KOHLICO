@@ -8,8 +8,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Link from "next/link";
-
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
@@ -36,7 +34,7 @@ export default function LoginPage() {
       redirect: false,
     });
 
-    if (result?.error) {
+    if (!result || !result.ok) {
       setServerError("Invalid email or password. Please try again.");
       return;
     }
@@ -121,17 +119,6 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-
-        {/* Register link — only relevant for first-time setup */}
-        <p className="text-center text-xs text-gray-500">
-          First time here?{" "}
-          <Link
-            href="/register"
-            className="font-medium text-blue-600 hover:text-blue-700 underline underline-offset-2"
-          >
-            Create an account
-          </Link>
-        </p>
       </div>
     </div>
   );

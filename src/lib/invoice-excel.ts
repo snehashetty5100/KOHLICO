@@ -1,7 +1,10 @@
 // src/lib/invoice-excel.ts
-// Builds an .xlsx workbook — "Invoice Cum Packing List" with letterhead & footer.
+// Builds an .xlsx workbook matching the real "Invoice Cum Packing List" layout.
+// Products grouped by HS code with sub-rows per pack size.
 
 import ExcelJS from "exceljs";
+
+// ── Types (unchanged — must match API route data shape) ──────────────────────
 
 export interface ExcelInvoiceItem {
   description: string;
@@ -46,7 +49,75 @@ export interface ExcelInvoiceData {
   items: ExcelInvoiceItem[];
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Internal: product grouping ───────────────────────────────────────────────
+
+interface ProductGroup {
+  index: number;
+  name: string;
+  hsCode: string;
+  totalQty: number;
+  totalFob: number;
+  totalCi: number;
+  totalTaxINR: number;
+  totalIgstINR: number;
+  totalNetWt: number;
+  totalGrossWt: number;
+  ratePerKg: number;
+  items: ExcelInvoiceItem[];
+}
+
+function commonPrefix(strs: string[]): string {
+  if (strs.length === 0) return "";
+  if (strs.length === 1) return strs[0];
+  const words = strs.map((s) => s.trim().split(/\s+/));
+  const result: string[] = [];
+  for (let i = 0; i < Math.min(...words.map((w) => w.length)); i++) {
+    if (words.every((w) => w[i].toUpperCase() === words[0][i].toUpperCase())) {
+      result.push(words[0][i]);
+    } else break;
+  }
+  return result.length > 0 ? result.join(" ") : strs[0];
+}
+
+function buildGroups(
+  items: ExcelInvoiceItem[],
+  totalFob: number,
+  insCAD: number,
+): ProductGroup[] {
+  const map = new Map<string, ExcelInvoiceItem[]>();
+  for (const item of items) {
+    if (!map.has(item.hsCode)) map.set(item.hsCode, []);
+    map.get(item.hsCode)!.push(item);
+  }
+  const insRate = totalFob > 0 ? insCAD / totalFob : 0;
+
+  return Array.from(map.entries()).map(([hsCode, groupItems], idx) => {
+    const totalQty = groupItems.reduce((s, i) => s + i.quantity, 0);
+    const totalFobG = groupItems.reduce((s, i) => s + i.fobCAD, 0);
+    const totalTaxINR = groupItems.reduce((s, i) => s + i.taxableValueINR, 0);
+    const totalIgstINR = groupItems.reduce((s, i) => s + i.igstAmountINR, 0);
+    const totalNetWt = groupItems.reduce((s, i) => s + i.netWeight, 0);
+    const totalGrossWt = groupItems.reduce((s, i) => s + i.grossWeight, 0);
+    return {
+      index: idx + 1,
+      name: commonPrefix(groupItems.map((i) => i.description)),
+      hsCode,
+      totalQty,
+      totalFob: totalFobG,
+      totalCi: totalFobG * (1 + insRate),
+      totalTaxINR,
+      totalIgstINR,
+      totalNetWt,
+      totalGrossWt,
+      ratePerKg: totalNetWt > 0 ? totalFobG / totalNetWt : 0,
+      items: groupItems,
+    };
+  });
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+type WS = ExcelJS.Worksheet;
 
 function fmtDate(d: Date): string {
   return new Date(d).toLocaleDateString("en-IN", {
@@ -55,8 +126,6 @@ function fmtDate(d: Date): string {
     year: "numeric",
   });
 }
-
-type WsType = ExcelJS.Worksheet;
 
 function allBorders(): Partial<ExcelJS.Borders> {
   return {
@@ -67,57 +136,76 @@ function allBorders(): Partial<ExcelJS.Borders> {
   };
 }
 
-function headerFill(): ExcelJS.Fill {
-  return {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FFD9D9D9" },
-  };
-}
 
-function brandFill(): ExcelJS.Fill {
-  return {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FF1A3C5E" },
-  };
-}
 
-function accentFill(): ExcelJS.Fill {
-  return {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FFEEF2F7" },
-  };
-}
+const HEADER_FILL: ExcelJS.Fill = {
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFE4E4E4" },
+};
 
-function labelCell(ws: WsType, row: number, col: number, value: string) {
-  const cell = ws.getRow(row).getCell(col);
-  cell.value = value;
-  cell.font = { italic: true, size: 7, color: { argb: "FF777777" } };
-}
+const GROUP_FILL: ExcelJS.Fill = {
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFF2F2F2" },
+};
 
-function boldCell(
-  ws: WsType,
+const SUBTOTAL_FILL: ExcelJS.Fill = {
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFF7F7F7" },
+};
+
+/** Set value + style on a single cell. */
+function setCell(
+  ws: WS,
   row: number,
   col: number,
-  value: string | number
+  value: string | number,
+  opts?: {
+    bold?: boolean;
+    italic?: boolean;
+    size?: number;
+    align?: "left" | "center" | "right";
+    vAlign?: "top" | "middle" | "bottom";
+    wrap?: boolean;
+    numFmt?: string;
+    fill?: ExcelJS.Fill;
+    border?: Partial<ExcelJS.Borders>;
+    underline?: boolean;
+    color?: string;
+  },
 ) {
   const cell = ws.getRow(row).getCell(col);
-  cell.value = value;
-  cell.font = { bold: true, size: 9 };
+  cell.value = value as ExcelJS.CellValue;
+  cell.font = {
+    bold: opts?.bold ?? false,
+    italic: opts?.italic ?? false,
+    size: opts?.size ?? 9,
+    underline: opts?.underline ?? false,
+    color: opts?.color ? { argb: opts.color } : undefined,
+  };
+  cell.alignment = {
+    horizontal: opts?.align ?? "left",
+    vertical: opts?.vAlign ?? "middle",
+    wrapText: opts?.wrap ?? false,
+  };
+  if (opts?.numFmt) cell.numFmt = opts.numFmt;
+  if (opts?.fill) cell.fill = opts.fill;
+  if (opts?.border) cell.border = opts.border;
 }
 
-function setBorders(ws: WsType, row: number, fromCol: number, toCol: number) {
-  for (let c = fromCol; c <= toCol; c++) {
+/** Apply borders to a range of cells in a row. */
+function borderRow(ws: WS, row: number, from: number, to: number) {
+  for (let c = from; c <= to; c++) {
     ws.getRow(row).getCell(c).border = allBorders();
   }
 }
 
-// ── Main builder ──────────────────────────────────────────────────────────────
+// ── Main builder ─────────────────────────────────────────────────────────────
 
 export async function buildInvoiceExcel(
-  data: ExcelInvoiceData
+  data: ExcelInvoiceData,
 ): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kohlico Invoice App";
@@ -126,582 +214,473 @@ export async function buildInvoiceExcel(
   const ws = wb.addWorksheet("Invoice Cum Packing List", {
     pageSetup: {
       orientation: "landscape",
-      paperSize: 9,
+      paperSize: 9, // A4
       fitToPage: true,
       fitToWidth: 1,
     },
   });
 
-  // Column widths (A–N = 14 cols)
+  // ── Column widths (A=1 through L=12) ──────────────────────────────────────
+  // A: Marks & Nos
+  // B: No.& Kind of Pkgs (Pack Size)
+  // C: Description of Goods
+  // D: Qty PKGS
+  // E: Rate FOB CAD $/PKG
+  // F: Amount FOB CAD $
+  // G: Amount C & I CAD $
+  // H: Taxable Value
+  // I: IGST Rate
+  // J: IGST Amount
+  // K: Net Wt (kg)
+  // L: Gross Wt (kg)
   ws.columns = [
-    { width: 16 }, // A – Marks & Nos
-    { width: 30 }, // B – Description
-    { width: 10 }, // C – Pack Size
-    { width: 8 }, // D – Qty (PKGS)
-    { width: 10 }, // E – FOB Rate CAD
-    { width: 12 }, // F – FOB Value CAD
-    { width: 12 }, // G – C&I CAD
-    { width: 14 }, // H – INR Equivalent
-    { width: 7 }, // I – IGST %
-    { width: 14 }, // J – IGST Amt INR
-    { width: 10 }, // K – Net Wt (kg)
-    { width: 10 }, // L – Gross Wt (kg)
-    { width: 12 }, // M – (used for summary)
-    { width: 12 }, // N – (used for summary)
+    { width: 18 }, // A
+    { width: 16 }, // B
+    { width: 34 }, // C
+    { width: 8 },  // D
+    { width: 14 }, // E
+    { width: 14 }, // F
+    { width: 14 }, // G
+    { width: 16 }, // H
+    { width: 7 },  // I
+    { width: 14 }, // J
+    { width: 12 }, // K
+    { width: 12 }, // L
   ];
+
+  const insCAD = data.insuranceCAD ?? 0;
+
+  // Grand totals
+  const totals = data.items.reduce(
+    (a, i) => ({
+      pkgs: a.pkgs + i.quantity,
+      fob: a.fob + i.fobCAD,
+      tax: a.tax + i.taxableValueINR,
+      igst: a.igst + i.igstAmountINR,
+      net: a.net + i.netWeight,
+      grs: a.grs + i.grossWeight,
+    }),
+    { pkgs: 0, fob: 0, tax: 0, igst: 0, net: 0, grs: 0 },
+  );
+  const insRate = totals.fob > 0 ? insCAD / totals.fob : 0;
+  const totalCi = totals.fob * (1 + insRate);
+  const groups = buildGroups(data.items, totals.fob, insCAD);
+  const marksText = data.items[0]?.marksAndNos ?? "";
 
   let r = 1;
 
-  // ── Company Letterhead ────────────────────────────────────────────────────
-  ws.mergeCells(`A${r}:H${r}`);
-  const nameCell = ws.getCell(`A${r}`);
-  nameCell.value = "KOHLICO FOODS AND BEVERAGES PVT. LTD";
-  nameCell.font = { bold: true, size: 16, color: { argb: "FFFFFFFF" } };
-  nameCell.fill = brandFill();
-  nameCell.alignment = { vertical: "middle" };
-  nameCell.border = allBorders();
-
-  ws.mergeCells(`I${r}:N${r}`);
-  const regCell = ws.getCell(`I${r}`);
-  regCell.value = `IEC: ${data.iecCode}  |  PAN: ${data.panNo}  |  GSTIN: ${data.gstinNo}`;
-  regCell.font = { bold: true, size: 8, color: { argb: "FFFFFFFF" } };
-  regCell.fill = brandFill();
-  regCell.alignment = { horizontal: "right", vertical: "middle" };
-  regCell.border = allBorders();
-  ws.getRow(r).height = 28;
-  r++;
-
-  ws.mergeCells(`A${r}:H${r}`);
-  const addrCell = ws.getCell(`A${r}`);
-  addrCell.value =
-    "391, Narsi Natha Street, Mahesh Chamber, Room No. 2, 1st Floor, Mumbai – 400009, India";
-  addrCell.font = { size: 8, color: { argb: "FF444444" } };
-  addrCell.alignment = { vertical: "middle" };
-  addrCell.border = allBorders();
-
-  ws.mergeCells(`I${r}:N${r}`);
-  const contactCell = ws.getCell(`I${r}`);
-  contactCell.value =
-    "Phone: +91 22 XXXX XXXX  |  Email: exports@kohlico.com";
-  contactCell.font = { size: 8, color: { argb: "FF444444" } };
-  contactCell.alignment = { horizontal: "right", vertical: "middle" };
-  contactCell.border = allBorders();
-  ws.getRow(r).height = 18;
-  r++;
-
-  r++; // spacer
-
-  // ── Title ─────────────────────────────────────────────────────────────────
-  ws.mergeCells(`A${r}:N${r}`);
-  const titleCell = ws.getCell(`A${r}`);
-  titleCell.value = "INVOICE CUM PACKING LIST";
-  titleCell.font = { bold: true, size: 12, underline: true };
-  titleCell.alignment = { horizontal: "center" };
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Row 1: Title — "INVOICE CUM PACKING LIST" centered
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:L${r}`);
+  setCell(ws, r, 1, "INVOICE CUM PACKING LIST", {
+    bold: true,
+    size: 12,
+    align: "center",
+    underline: true,
+    border: allBorders(),
+  });
   ws.getRow(r).height = 22;
   r++;
 
-  r++; // spacer
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Row 2: Exporter (left A-D) | Invoice Info (right E-J) | IEC (K-L)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Exporter block spans 4 rows (r to r+3)
+  ws.mergeCells(`A${r}:D${r + 3}`);
+  setCell(
+    ws, r, 1,
+    "Exporter :\n" +
+    "KOHLICO FOODS AND BEVERAGES PVT.LTD\n" +
+    "391, NARSI NATHA STREET, MAHESH CHAMBER,\n" +
+    "ROOM NO. 2, 1ST FLOOR, MUMBAI - 400009, INDIA",
+    { size: 8, wrap: true, vAlign: "top", border: allBorders() },
+  );
+  // Make company name bold via rich text
+  ws.getRow(r).getCell(1).font = { size: 8 };
 
-  // ── Invoice Info Row ──────────────────────────────────────────────────────
-  const infoLabels = [
-    "Invoice No.",
-    "Invoice Date",
-    "Proforma Inv. No.",
-    "Proforma Date",
-  ];
-  const infoValues = [
-    data.invoiceNo,
-    fmtDate(data.invoiceDate),
-    data.proformaInvNo ?? "—",
-    data.proformaDate ? fmtDate(data.proformaDate) : "—",
-  ];
+  // Invoice no & Date (E-G)
+  ws.mergeCells(`E${r}:G${r}`);
+  setCell(ws, r, 5, "Invoice no. & Date", {
+    size: 7, italic: true, color: "FF666666", border: allBorders(),
+  });
+  // Proforma Inv. & Date (H-I)
+  ws.mergeCells(`H${r}:I${r}`);
+  setCell(ws, r, 8, "Proforma Inv. & Date", {
+    size: 7, italic: true, color: "FF666666", border: allBorders(),
+  });
+  // IEC NO. (K-L)
+  ws.mergeCells(`K${r}:L${r}`);
+  setCell(ws, r, 11, "IEC NO.", {
+    size: 7, italic: true, color: "FF666666", border: allBorders(),
+  });
+  // J column for this row
+  setCell(ws, r, 10, "", { border: allBorders() });
+  r++;
 
-  // Labels
-  ws.mergeCells(`A${r}:B${r}`);
-  labelCell(ws, r, 1, infoLabels[0]);
-  ws.mergeCells(`C${r}:E${r}`);
-  labelCell(ws, r, 3, infoLabels[1]);
-  ws.mergeCells(`F${r}:I${r}`);
-  labelCell(ws, r, 6, infoLabels[2]);
-  ws.mergeCells(`J${r}:N${r}`);
-  labelCell(ws, r, 10, infoLabels[3]);
-  setBorders(ws, r, 1, 14);
+  // Values row
+  ws.mergeCells(`E${r}:G${r}`);
+  setCell(ws, r, 5, data.invoiceNo, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`H${r}:I${r}`);
+  setCell(ws, r, 8, data.proformaInvNo ?? "—", { bold: true, size: 9, border: allBorders() });
+  setCell(ws, r, 10, "", { border: allBorders() });
+  ws.mergeCells(`K${r}:L${r}`);
+  setCell(ws, r, 11, data.iecCode, { bold: true, size: 9, border: allBorders() });
+  r++;
+
+  // Date row
+  ws.mergeCells(`E${r}:G${r}`);
+  setCell(ws, r, 5, `DTD: ${fmtDate(data.invoiceDate)}`, { size: 8, border: allBorders() });
+  ws.mergeCells(`H${r}:I${r}`);
+  setCell(ws, r, 8, data.proformaDate ? `DT: ${fmtDate(data.proformaDate)}` : "", {
+    size: 8, border: allBorders(),
+  });
+  setCell(ws, r, 10, "", { border: allBorders() });
+  ws.mergeCells(`K${r}:L${r}`);
+  setCell(ws, r, 11, "", { border: allBorders() });
+  r++;
+
+  // Exporter's Ref / PAN / GSTIN / End Use Code row
+  ws.mergeCells(`E${r}:F${r}`);
+  setCell(ws, r, 5, "Exporter's Ref.", {
+    size: 7, italic: true, color: "FF666666", border: allBorders(),
+  });
+  ws.mergeCells(`G${r}:H${r}`);
+  setCell(ws, r, 7, `PAN NO.  ${data.panNo}`, { size: 8, bold: true, border: allBorders() });
+  ws.mergeCells(`I${r}:J${r}`);
+  setCell(ws, r, 9, `GSTIN NO.  ${data.gstinNo}`, { size: 8, bold: true, border: allBorders() });
+  ws.mergeCells(`K${r}:L${r}`);
+  setCell(ws, r, 11, data.endUseCode ? `END USE CODE:\n${data.endUseCode}` : "", {
+    size: 8, bold: true, wrap: true, border: allBorders(),
+  });
+  r++;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Row 3: Consignee (left A-F) | Buyer (right G-L)
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:F${r + 1}`);
+  setCell(
+    ws, r, 1,
+    "Consignee:\n" + data.consigneeName + "\n" + data.consigneeAddress +
+    (data.consigneeCountry ? ", " + data.consigneeCountry : ""),
+    { size: 8, wrap: true, vAlign: "top", border: allBorders() },
+  );
+  ws.mergeCells(`G${r}:L${r + 1}`);
+  setCell(
+    ws, r, 7,
+    "Buyer (if other than consignee)\n" +
+    (data.buyerName ?? data.consigneeName) + "\n" +
+    (data.buyerAddress ?? data.consigneeAddress),
+    { size: 8, wrap: true, vAlign: "top", border: allBorders() },
+  );
+  ws.getRow(r).height = 18;
+  ws.getRow(r + 1).height = 18;
+  r += 2;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Row 4: Pre-Carriage | Port of Receipt | Country of Origin | Country of Dest
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:C${r}`);
+  setCell(ws, r, 1, "Pre-Carriage by", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  ws.mergeCells(`D${r}:F${r}`);
+  setCell(ws, r, 4, "Port of Receipt by Pre-Carriage", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  ws.mergeCells(`G${r}:I${r}`);
+  setCell(ws, r, 7, "Country of Origin", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  ws.mergeCells(`J${r}:L${r}`);
+  setCell(ws, r, 10, "Country of Final Destination", { size: 7, italic: true, color: "FF666666", border: allBorders() });
   r++;
   // Values
-  ws.mergeCells(`A${r}:B${r}`);
-  boldCell(ws, r, 1, infoValues[0]);
-  ws.mergeCells(`C${r}:E${r}`);
-  boldCell(ws, r, 3, infoValues[1]);
-  ws.mergeCells(`F${r}:I${r}`);
-  boldCell(ws, r, 6, infoValues[2]);
-  ws.mergeCells(`J${r}:N${r}`);
-  boldCell(ws, r, 10, infoValues[3]);
-  setBorders(ws, r, 1, 14);
+  ws.mergeCells(`A${r}:C${r}`);
+  setCell(ws, r, 1, data.preCarriage, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`D${r}:F${r}`);
+  setCell(ws, r, 4, data.portOfReceipt, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`G${r}:I${r}`);
+  setCell(ws, r, 7, data.countryOfOrigin, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`J${r}:L${r}`);
+  setCell(ws, r, 10, data.countryOfDestination, { bold: true, size: 9, border: allBorders() });
   r++;
 
-  // ── Consignee & Buyer ─────────────────────────────────────────────────────
-  ws.mergeCells(`A${r}:G${r + 2}`);
-  ws.getCell(`A${r}`).value =
-    "Consignee:\n" +
-    data.consigneeName +
-    "\n" +
-    data.consigneeAddress +
-    "\n" +
-    data.consigneeCountry;
-  ws.getCell(`A${r}`).font = { size: 8 };
-  ws.getCell(`A${r}`).alignment = { wrapText: true, vertical: "top" };
-  ws.getCell(`A${r}`).border = allBorders();
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Row 5: Vessel/Flight | Port of Loading | Port of Discharge | Final Dest
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:C${r}`);
+  setCell(ws, r, 1, "Vessel/Flight No.", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  ws.mergeCells(`D${r}:F${r}`);
+  setCell(ws, r, 4, "Port of Loading", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  ws.mergeCells(`G${r}:I${r}`);
+  setCell(ws, r, 7, "Port of Discharge", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  ws.mergeCells(`J${r}:L${r}`);
+  setCell(ws, r, 10, "Final Destination", { size: 7, italic: true, color: "FF666666", border: allBorders() });
+  r++;
+  // Values
+  ws.mergeCells(`A${r}:C${r}`);
+  setCell(ws, r, 1, data.vesselFlight ?? "", { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`D${r}:F${r}`);
+  setCell(ws, r, 4, data.portOfLoading, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`G${r}:I${r}`);
+  setCell(ws, r, 7, data.portOfDischarge, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`J${r}:L${r}`);
+  setCell(ws, r, 10, data.finalDestination, { bold: true, size: 9, border: allBorders() });
+  r++;
 
-  ws.mergeCells(`H${r}:N${r + 2}`);
-  ws.getCell(`H${r}`).value =
-    "Buyer (if other than consignee):\n" +
-    (data.buyerName ?? data.consigneeName) +
-    "\n" +
-    (data.buyerAddress ?? data.consigneeAddress);
-  ws.getCell(`H${r}`).font = { size: 8 };
-  ws.getCell(`H${r}`).alignment = { wrapText: true, vertical: "top" };
-  ws.getCell(`H${r}`).border = allBorders();
-  r += 3;
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Row 6: Terms of Delivery (left) | EX.RATE (right)
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:I${r}`);
+  setCell(ws, r, 1, "TERMS OF DELIVERY & PAYMENT", {
+    size: 7, italic: true, color: "FF666666", border: allBorders(),
+  });
+  ws.mergeCells(`J${r}:L${r}`);
+  setCell(ws, r, 10, "EX.RATE", {
+    size: 7, italic: true, color: "FF666666", border: allBorders(),
+  });
+  r++;
+  ws.mergeCells(`A${r}:I${r}`);
+  setCell(ws, r, 1, data.termsOfDelivery, { bold: true, size: 9, border: allBorders() });
+  ws.mergeCells(`J${r}:L${r}`);
+  setCell(ws, r, 10, data.exchangeRate, {
+    bold: true, size: 9, numFmt: "0.00", border: allBorders(),
+  });
+  r++;
 
-  // ── Shipping Details ──────────────────────────────────────────────────────
-  const shipLabels = [
-    ["Pre-Carriage By", "Port of Receipt", "Country of Origin", "Country of Destination"],
-    ["Vessel / Flight", "Port of Loading", "Port of Discharge", "Final Destination"],
-    ["Terms of Delivery", "", "Exchange Rate (INR/CAD)", ""],
-  ];
-  const shipValues = [
-    [data.preCarriage, data.portOfReceipt, data.countryOfOrigin, data.countryOfDestination],
-    [data.vesselFlight ?? "—", data.portOfLoading, data.portOfDischarge, data.finalDestination],
-    [data.termsOfDelivery, "", data.exchangeRate.toFixed(2), ""],
-  ];
-
-  for (let si = 0; si < shipLabels.length; si++) {
-    const labels = shipLabels[si];
-    const values = shipValues[si];
-
-    // Labels row
-    if (labels[0]) { ws.mergeCells(`A${r}:C${r}`); labelCell(ws, r, 1, labels[0]); }
-    if (labels[1]) { ws.mergeCells(`D${r}:G${r}`); labelCell(ws, r, 4, labels[1]); }
-    if (labels[2]) { ws.mergeCells(`H${r}:K${r}`); labelCell(ws, r, 8, labels[2]); }
-    if (labels[3]) { ws.mergeCells(`L${r}:N${r}`); labelCell(ws, r, 12, labels[3]); }
-    r++;
-
-    // Values row
-    if (values[0]) { ws.mergeCells(`A${r}:C${r}`); boldCell(ws, r, 1, values[0]); ws.getCell(`A${r}`).border = allBorders(); }
-    if (values[1]) { ws.mergeCells(`D${r}:G${r}`); boldCell(ws, r, 4, values[1]); ws.getCell(`D${r}`).border = allBorders(); }
-    if (values[2]) { ws.mergeCells(`H${r}:K${r}`); boldCell(ws, r, 8, values[2]); ws.getCell(`H${r}`).border = allBorders(); }
-    if (values[3]) { ws.mergeCells(`L${r}:N${r}`); boldCell(ws, r, 12, values[3]); ws.getCell(`L${r}`).border = allBorders(); }
-    r++;
-  }
-
-  r++; // spacer
-
-  // ── Table Header ──────────────────────────────────────────────────────────
-  const thRow = ws.getRow(r);
-  thRow.height = 30;
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Table Header
+  // ═══════════════════════════════════════════════════════════════════════════
+  const tableHeaderRow = r;
   const headers = [
-    "Marks & Nos /\nKind of Pkgs",
-    "Description of Goods\n(HS Code)",
-    "Pack\nSize",
-    "Qty\n(Pkgs)",
-    "FOB Rate\n(CAD/Pkg)",
-    "FOB Value\nCAD $",
-    "C&I\nCAD $",
-    "INR\nEquivalent",
-    "IGST\n%",
-    "IGST Amt\nINR",
+    "Marks &\nNos.",
+    "No.& Kind\nof Pkgs",
+    "Description of Goods",
+    "Qty.\nPKGS",
+    "Rate\nFOB CAD\n$/PKG",
+    "Amount\nFOB CAD $",
+    "Amount\nC & I CAD $",
+    "Taxable\nValue",
+    "Integrated\nTax Rate",
+    "Integrated\nTax Amount",
     "Net Wt\n(kg)",
     "Gross Wt\n(kg)",
   ];
 
   headers.forEach((h, i) => {
-    const cell = thRow.getCell(i + 1);
-    cell.value = h;
-    cell.font = { bold: true, size: 8, color: { argb: "FF333333" } };
-    cell.alignment = {
-      horizontal: "center",
-      vertical: "middle",
-      wrapText: true,
-    };
-    cell.fill = headerFill();
-    cell.border = allBorders();
-  });
-  r++;
-
-  // ── Totals accumulators ───────────────────────────────────────────────────
-  const totals = data.items.reduce(
-    (acc, it) => ({
-      pkgs: acc.pkgs + it.quantity,
-      fobCAD: acc.fobCAD + it.fobCAD,
-      taxINR: acc.taxINR + it.taxableValueINR,
-      igstINR: acc.igstINR + it.igstAmountINR,
-      netWt: acc.netWt + it.netWeight,
-      grossWt: acc.grossWt + it.grossWeight,
-    }),
-    { pkgs: 0, fobCAD: 0, taxINR: 0, igstINR: 0, netWt: 0, grossWt: 0 }
-  );
-
-  const insCAD = data.insuranceCAD ?? 0;
-  const ciCAD = totals.fobCAD + insCAD;
-  const igstCAD =
-    data.exchangeRate > 0 ? totals.igstINR / data.exchangeRate : 0;
-  const grandTotalCAD = totals.fobCAD + igstCAD;
-  const grandTotalINR = totals.taxINR + totals.igstINR;
-
-  // ── Line Item Rows ────────────────────────────────────────────────────────
-  data.items.forEach((item, idx) => {
-    const itemRow = ws.getRow(r);
-    const ciItem = item.fobCAD + insCAD / data.items.length;
-
-    const altFill: ExcelJS.Fill =
-      idx % 2 === 1
-        ? {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFF7F7F7" },
-          }
-        : {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFFFFFFF" },
-          };
-
-    const values: (string | number)[] = [
-      item.marksAndNos ?? "",
-      item.description + "\n[HS: " + item.hsCode + "]",
-      item.packageDescription,
-      item.quantity,
-      item.rate,
-      item.fobCAD,
-      ciItem,
-      item.taxableValueINR,
-      (item.igstRate * 100).toFixed(0) + "%",
-      item.igstAmountINR,
-      item.netWeight,
-      item.grossWeight,
-    ];
-
-    values.forEach((v, i) => {
-      const cell = itemRow.getCell(i + 1);
-      cell.value = v as ExcelJS.CellValue;
-      cell.font = { size: 8 };
-      cell.fill = altFill;
-      cell.border = allBorders();
-      if (i >= 3) cell.alignment = { horizontal: "right", vertical: "middle" };
-      else cell.alignment = { wrapText: true, vertical: "top" };
-      // Number formatting
-      if ([4, 5, 6, 7, 9].includes(i)) cell.numFmt = "#,##0.00";
-      if ([10, 11].includes(i)) cell.numFmt = "0.000";
+    setCell(ws, r, i + 1, h, {
+      bold: true,
+      size: 8,
+      align: "center",
+      vAlign: "middle",
+      wrap: true,
+      fill: HEADER_FILL,
+      border: allBorders(),
     });
-
-    itemRow.height = 28;
-    r++;
   });
-
-  // ── Totals Row ────────────────────────────────────────────────────────────
-  const totRow = ws.getRow(r);
-  totRow.height = 20;
-  ws.mergeCells(`A${r}:C${r}`);
-  ws.getCell(`A${r}`).value = `TOTAL (${totals.pkgs} PKGS)`;
-  ws.getCell(`A${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`A${r}`).fill = headerFill();
-  ws.getCell(`A${r}`).border = allBorders();
-
-  const totValues: (number | string)[] = [
-    totals.pkgs,
-    "",
-    totals.fobCAD,
-    ciCAD,
-    totals.taxINR,
-    "",
-    totals.igstINR,
-    totals.netWt,
-    totals.grossWt,
-  ];
-
-  totValues.forEach((v, i) => {
-    const cell = totRow.getCell(i + 4);
-    cell.value = v as ExcelJS.CellValue;
-    cell.font = { bold: true, size: 9 };
-    cell.fill = headerFill();
-    cell.border = allBorders();
-    cell.alignment = { horizontal: "right" };
-    if ([2, 3, 4, 6].includes(i)) cell.numFmt = "#,##0.00";
-    if ([7, 8].includes(i)) cell.numFmt = "0.000";
-  });
+  ws.getRow(r).height = 32;
   r++;
 
-  r++; // spacer
+  // Track the first and last data rows for marks column merge
+  const dataStartRow = r;
 
-  // ── Subtotal → IGST → Grand Total (CAD & INR) ────────────────────────────
-  // Column headers
-  ws.mergeCells(`A${r}:F${r}`);
-  ws.getCell(`A${r}`).fill = accentFill();
-  ws.getCell(`A${r}`).border = allBorders();
-  ws.mergeCells(`G${r}:H${r}`);
-  ws.getCell(`G${r}`).value = "CAD $";
-  ws.getCell(`G${r}`).font = { bold: true, size: 8, color: { argb: "FF555555" } };
-  ws.getCell(`G${r}`).fill = accentFill();
-  ws.getCell(`G${r}`).border = allBorders();
-  ws.getCell(`G${r}`).alignment = { horizontal: "center" };
-  ws.mergeCells(`I${r}:J${r}`);
-  ws.getCell(`I${r}`).value = "INR ₹";
-  ws.getCell(`I${r}`).font = { bold: true, size: 8, color: { argb: "FF555555" } };
-  ws.getCell(`I${r}`).fill = accentFill();
-  ws.getCell(`I${r}`).border = allBorders();
-  ws.getCell(`I${r}`).alignment = { horizontal: "center" };
-  r++;
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Product Groups
+  // ═══════════════════════════════════════════════════════════════════════════
 
-  // Subtotal
-  ws.mergeCells(`A${r}:F${r}`);
-  ws.getCell(`A${r}`).value = "Subtotal (FOB)";
-  ws.getCell(`A${r}`).font = { size: 9 };
-  ws.getCell(`A${r}`).border = allBorders();
-  ws.mergeCells(`G${r}:H${r}`);
-  ws.getCell(`G${r}`).value = totals.fobCAD;
-  ws.getCell(`G${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`G${r}`).numFmt = "#,##0.00";
-  ws.getCell(`G${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`G${r}`).border = allBorders();
-  ws.mergeCells(`I${r}:J${r}`);
-  ws.getCell(`I${r}`).value = totals.taxINR;
-  ws.getCell(`I${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`I${r}`).numFmt = "#,##0.00";
-  ws.getCell(`I${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`I${r}`).border = allBorders();
-  r++;
-
-  // Insurance (if applicable)
-  if (insCAD > 0) {
-    ws.mergeCells(`A${r}:F${r}`);
-    ws.getCell(`A${r}`).value = "Insurance";
-    ws.getCell(`A${r}`).font = { size: 9 };
-    ws.getCell(`A${r}`).border = allBorders();
-    ws.mergeCells(`G${r}:H${r}`);
-    ws.getCell(`G${r}`).value = insCAD;
-    ws.getCell(`G${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`G${r}`).numFmt = "#,##0.00";
-    ws.getCell(`G${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`G${r}`).border = allBorders();
-    ws.mergeCells(`I${r}:J${r}`);
-    ws.getCell(`I${r}`).value = insCAD * data.exchangeRate;
-    ws.getCell(`I${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`I${r}`).numFmt = "#,##0.00";
-    ws.getCell(`I${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`I${r}`).border = allBorders();
+  for (const group of groups) {
+    // ── Group header row: [n]  qty CTNS  PRODUCT NAME [HS CODE: xxx] ──
+    ws.mergeCells(`B${r}:C${r}`);
+    setCell(ws, r, 2, `[${group.index}]     ${group.totalQty} CTNS   ${group.name} [HS CODE: ${group.hsCode}]`, {
+      bold: true,
+      size: 9,
+      underline: true,
+      fill: GROUP_FILL,
+      border: allBorders(),
+    });
+    // Empty cells for the rest of the row
+    for (let c = 4; c <= 12; c++) {
+      setCell(ws, r, c, "", { fill: GROUP_FILL, border: allBorders() });
+    }
+    // A column (marks) — leave empty, will be merged later
+    setCell(ws, r, 1, "", { border: allBorders() });
     r++;
 
-    ws.mergeCells(`A${r}:F${r}`);
-    ws.getCell(`A${r}`).value = "C&I Total";
-    ws.getCell(`A${r}`).font = { size: 9 };
-    ws.getCell(`A${r}`).border = allBorders();
-    ws.mergeCells(`G${r}:H${r}`);
-    ws.getCell(`G${r}`).value = ciCAD;
-    ws.getCell(`G${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`G${r}`).numFmt = "#,##0.00";
-    ws.getCell(`G${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`G${r}`).border = allBorders();
-    ws.mergeCells(`I${r}:J${r}`);
-    ws.getCell(`I${r}`).value = ciCAD * data.exchangeRate;
-    ws.getCell(`I${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`I${r}`).numFmt = "#,##0.00";
-    ws.getCell(`I${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`I${r}`).border = allBorders();
+    // ── Sub-rows: one per pack-size variant ──
+    for (const item of group.items) {
+      const ciItem = item.fobCAD * (1 + insRate);
+
+      setCell(ws, r, 1, "", { border: allBorders() }); // marks (merged later)
+      setCell(ws, r, 2, item.packageDescription, { size: 8, border: allBorders() });
+      setCell(ws, r, 3, item.description, { size: 8, border: allBorders() });
+      setCell(ws, r, 4, item.quantity, { size: 8, align: "right", border: allBorders() });
+      setCell(ws, r, 5, item.rate, { size: 8, align: "right", numFmt: "#,##0.00", border: allBorders() });
+      setCell(ws, r, 6, item.fobCAD, { size: 8, align: "right", numFmt: "#,##0.00", border: allBorders() });
+      setCell(ws, r, 7, ciItem, { size: 8, align: "right", numFmt: "#,##0.00", border: allBorders() });
+      setCell(ws, r, 8, item.taxableValueINR, { size: 8, align: "right", numFmt: "#,##0.00", border: allBorders() });
+      setCell(ws, r, 9, `${(item.igstRate * 100).toFixed(0)}%`, { size: 8, align: "center", border: allBorders() });
+      setCell(ws, r, 10, item.igstAmountINR, { size: 8, align: "right", numFmt: "#,##0.00", border: allBorders() });
+      setCell(ws, r, 11, item.netWeight, { size: 8, align: "right", numFmt: "0.000", border: allBorders() });
+      setCell(ws, r, 12, item.grossWeight, { size: 8, align: "right", numFmt: "0.000", border: allBorders() });
+      r++;
+    }
+
+    // ── Price-per-kg + group subtotals row ──
+    // Cols: B=rate/kg label, F=FOB total, G=C&I total, H=Taxable INR, I=blank, J=IGST total
+    setCell(ws, r, 1, "", { border: allBorders() }); // marks (merged later)
+    setCell(ws, r, 2, `$  ${group.ratePerKg.toFixed(3)}`, {
+      bold: true, size: 8, fill: SUBTOTAL_FILL, border: allBorders(),
+    });
+    setCell(ws, r, 3, "", { fill: SUBTOTAL_FILL, border: allBorders() });
+    setCell(ws, r, 4, "", { fill: SUBTOTAL_FILL, border: allBorders() });
+    setCell(ws, r, 5, "", { fill: SUBTOTAL_FILL, border: allBorders() });
+    setCell(ws, r, 6, group.totalFob, {
+      bold: true, size: 8, align: "right", numFmt: "#,##0.00",
+      fill: SUBTOTAL_FILL, border: allBorders(),
+    });
+    setCell(ws, r, 7, group.totalCi, {
+      bold: true, size: 8, align: "right", numFmt: "#,##0.00",
+      fill: SUBTOTAL_FILL, border: allBorders(),
+    });
+    setCell(ws, r, 8, group.totalTaxINR, {
+      bold: true, size: 8, align: "right", numFmt: "#,##0.00",
+      fill: SUBTOTAL_FILL, border: allBorders(),
+    });
+    setCell(ws, r, 9, "", { fill: SUBTOTAL_FILL, border: allBorders() });
+    setCell(ws, r, 10, group.totalIgstINR, {
+      bold: true, size: 8, align: "right", numFmt: "#,##0.00",
+      fill: SUBTOTAL_FILL, border: allBorders(),
+    });
+    setCell(ws, r, 11, "", { fill: SUBTOTAL_FILL, border: allBorders() });
+    setCell(ws, r, 12, "", { fill: SUBTOTAL_FILL, border: allBorders() });
+    r++;
+
+    // ── Weight summary row ──
+    ws.mergeCells(`B${r}:F${r}`);
+    setCell(
+      ws, r, 2,
+      `NT. WT. ${group.totalNetWt.toFixed(3)} KGS     GR. WT. ${group.totalGrossWt.toFixed(3)} KGS`,
+      { bold: true, size: 8, border: allBorders() },
+    );
+    setCell(ws, r, 1, "", { border: allBorders() }); // marks
+    for (let c = 7; c <= 12; c++) {
+      setCell(ws, r, c, "", { border: allBorders() });
+    }
+    r++;
+
+    // ── Blank separator row between groups ──
+    for (let c = 1; c <= 12; c++) {
+      setCell(ws, r, c, "", { border: allBorders() });
+    }
+    ws.getRow(r).height = 6;
     r++;
   }
 
-  // IGST @ 5%
-  ws.mergeCells(`A${r}:F${r}`);
-  ws.getCell(`A${r}`).value = "IGST @ 5%";
-  ws.getCell(`A${r}`).font = { size: 9 };
-  ws.getCell(`A${r}`).border = allBorders();
-  ws.mergeCells(`G${r}:H${r}`);
-  ws.getCell(`G${r}`).value = igstCAD;
-  ws.getCell(`G${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`G${r}`).numFmt = "#,##0.00";
-  ws.getCell(`G${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`G${r}`).border = allBorders();
-  ws.mergeCells(`I${r}:J${r}`);
-  ws.getCell(`I${r}`).value = totals.igstINR;
-  ws.getCell(`I${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`I${r}`).numFmt = "#,##0.00";
-  ws.getCell(`I${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`I${r}`).border = allBorders();
-  r++;
+  const dataEndRow = r - 1; // last data row (before totals)
 
-  // Grand Total
-  ws.mergeCells(`A${r}:F${r}`);
-  ws.getCell(`A${r}`).value = "GRAND TOTAL";
-  ws.getCell(`A${r}`).font = { bold: true, size: 10 };
-  ws.getCell(`A${r}`).fill = headerFill();
-  ws.getCell(`A${r}`).border = allBorders();
-  ws.mergeCells(`G${r}:H${r}`);
-  ws.getCell(`G${r}`).value = grandTotalCAD;
-  ws.getCell(`G${r}`).font = { bold: true, size: 10 };
-  ws.getCell(`G${r}`).numFmt = "#,##0.00";
-  ws.getCell(`G${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`G${r}`).fill = headerFill();
-  ws.getCell(`G${r}`).border = allBorders();
-  ws.mergeCells(`I${r}:J${r}`);
-  ws.getCell(`I${r}`).value = grandTotalINR;
-  ws.getCell(`I${r}`).font = { bold: true, size: 10 };
-  ws.getCell(`I${r}`).numFmt = "#,##0.00";
-  ws.getCell(`I${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`I${r}`).fill = headerFill();
-  ws.getCell(`I${r}`).border = allBorders();
+  // ── Merge marks column (A) across all data rows ──
+  if (dataEndRow > dataStartRow) {
+    ws.mergeCells(`A${dataStartRow}:A${dataEndRow}`);
+    setCell(ws, dataStartRow, 1, marksText + "\nCTNS NO.", {
+      bold: true, size: 8, vAlign: "top", wrap: true, border: allBorders(),
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Totals Row
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:C${r}`);
+  setCell(ws, r, 1, "(Amount Chargeable in Words) CAD $", {
+    bold: true, size: 9, fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 4, totals.pkgs, {
+    bold: true, size: 9, align: "right", fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 5, "TOTAL CAD $", {
+    bold: true, size: 8, align: "center", fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 6, totals.fob, {
+    bold: true, size: 9, align: "right", numFmt: "#,##0.00",
+    fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 7, totalCi, {
+    bold: true, size: 9, align: "right", numFmt: "#,##0.00",
+    fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 8, totals.tax, {
+    bold: true, size: 9, align: "right", numFmt: "#,##0.00",
+    fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 9, "", { fill: HEADER_FILL, border: allBorders() });
+  setCell(ws, r, 10, totals.igst, {
+    bold: true, size: 9, align: "right", numFmt: "#,##0.00",
+    fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 11, totals.net, {
+    bold: true, size: 9, align: "right", numFmt: "0.000",
+    fill: HEADER_FILL, border: allBorders(),
+  });
+  setCell(ws, r, 12, totals.grs, {
+    bold: true, size: 9, align: "right", numFmt: "0.000",
+    fill: HEADER_FILL, border: allBorders(),
+  });
   ws.getRow(r).height = 20;
   r++;
 
   r++; // spacer
 
-  // ── Packing Summary ───────────────────────────────────────────────────────
-  const summaryData = [
-    [
-      "TOTAL PACKAGES",
-      totals.pkgs,
-      "TOTAL FOB CAD $",
-      totals.fobCAD,
-      "TOTAL TAXABLE VALUE INR",
-      totals.taxINR,
-    ],
-    [
-      "TTL NET WT (KG)",
-      totals.netWt,
-      "INSURANCE CAD",
-      insCAD,
-      "TOTAL IGST INR",
-      totals.igstINR,
-    ],
-    [
-      "TTL GROSS WT (KG)",
-      totals.grossWt,
-      "TOTAL C&I CAD $",
-      ciCAD,
-      "EXCHANGE RATE",
-      data.exchangeRate,
-    ],
-  ];
-
-  summaryData.forEach((row) => {
-    const sheetRow = ws.getRow(r);
-    // Pair 1
-    ws.mergeCells(`A${r}:B${r}`);
-    ws.getCell(`A${r}`).value = row[0] as string;
-    ws.getCell(`A${r}`).font = { italic: true, size: 8 };
-    ws.getCell(`A${r}`).border = allBorders();
-
-    ws.mergeCells(`C${r}:D${r}`);
-    ws.getCell(`C${r}`).value = row[1] as number;
-    ws.getCell(`C${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`C${r}`).border = allBorders();
-    ws.getCell(`C${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`C${r}`).numFmt = "#,##0.000";
-
-    // Pair 2
-    ws.mergeCells(`E${r}:G${r}`);
-    ws.getCell(`E${r}`).value = row[2] as string;
-    ws.getCell(`E${r}`).font = { italic: true, size: 8 };
-    ws.getCell(`E${r}`).border = allBorders();
-
-    ws.mergeCells(`H${r}:I${r}`);
-    ws.getCell(`H${r}`).value = row[3] as number;
-    ws.getCell(`H${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`H${r}`).border = allBorders();
-    ws.getCell(`H${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`H${r}`).numFmt = "#,##0.00";
-
-    // Pair 3
-    ws.mergeCells(`J${r}:L${r}`);
-    ws.getCell(`J${r}`).value = row[4] as string;
-    ws.getCell(`J${r}`).font = { italic: true, size: 8 };
-    ws.getCell(`J${r}`).border = allBorders();
-
-    ws.mergeCells(`M${r}:N${r}`);
-    ws.getCell(`M${r}`).value = row[5] as number;
-    ws.getCell(`M${r}`).font = { bold: true, size: 9 };
-    ws.getCell(`M${r}`).border = allBorders();
-    ws.getCell(`M${r}`).alignment = { horizontal: "right" };
-    ws.getCell(`M${r}`).numFmt = "#,##0.00";
-
-    sheetRow.height = 16;
-    r++;
-  });
-
-  r++; // spacer
-
-  // ── Bank Details ──────────────────────────────────────────────────────────
-  ws.mergeCells(`A${r}:N${r}`);
-  ws.getCell(`A${r}`).value = "BANK DETAILS FOR REMITTANCE";
-  ws.getCell(`A${r}`).font = { bold: true, size: 9, underline: true };
-  ws.getCell(`A${r}`).border = allBorders();
-  ws.getCell(`A${r}`).fill = accentFill();
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Footer Summary
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:F${r}`);
+  setCell(ws, r, 1, `TTL NO.OF PKGS.  ${totals.pkgs}`, { bold: true, size: 9 });
   r++;
-
-  const bankDetails = [
-    ["Bank Name:", "HDFC BANK LTD"],
-    ["Branch:", "PRINCESS STREET, MUMBAI – 400002"],
-    ["A/C No.:", "XXXXXXXXXXXX"],
-    ["IFSC Code:", "HDFC0000XXX"],
-    ["Swift Code:", "HDFCINBBXXX"],
-    ["AD Code:", "XXXXXXXXXX"],
-  ];
-
-  bankDetails.forEach(([label, value]) => {
-    ws.mergeCells(`A${r}:C${r}`);
-    ws.getCell(`A${r}`).value = label;
-    ws.getCell(`A${r}`).font = { size: 8, color: { argb: "FF555555" } };
-    ws.getCell(`A${r}`).border = allBorders();
-
-    ws.mergeCells(`D${r}:N${r}`);
-    ws.getCell(`D${r}`).value = value;
-    ws.getCell(`D${r}`).font = { bold: true, size: 8 };
-    ws.getCell(`D${r}`).border = allBorders();
+  ws.mergeCells(`A${r}:F${r}`);
+  setCell(ws, r, 1, `TTL NET WT.KGS.  ${totals.net.toFixed(3)}`, { bold: true, size: 9 });
+  r++;
+  ws.mergeCells(`A${r}:F${r}`);
+  setCell(ws, r, 1, `TTL GR. WT.KGS.  ${totals.grs.toFixed(3)}`, { bold: true, size: 9 });
+  r++;
+  if (insCAD > 0) {
+    ws.mergeCells(`A${r}:F${r}`);
+    setCell(ws, r, 1, `INSU. CAD:  ${insCAD.toFixed(3)}`, { bold: true, size: 9 });
     r++;
-  });
+  }
 
   r++; // spacer
 
-  // ── Declaration ───────────────────────────────────────────────────────────
-  ws.mergeCells(`A${r}:N${r + 2}`);
-  ws.getCell(`A${r}`).value =
-    "We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.\n" +
-    "We intend to claim rewards under Remission of Duties & Taxes on Export Product (RoDTEP).\n" +
-    "SUPPLY MEANT FOR EXPORTS ON PAYMENT OF INTEGRATED TAX.";
-  ws.getCell(`A${r}`).font = { size: 7, italic: true };
-  ws.getCell(`A${r}`).alignment = { wrapText: true, vertical: "top" };
-  ws.getRow(r).height = 36;
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Declaration
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:L${r + 2}`);
+  setCell(
+    ws, r, 1,
+    "We declare that this invoice shows the actual price of the\n" +
+    "goods described and that all particulars are true and correct.\n" +
+    "We intend to claim rewards under Remission of Duties & Taxes on Export Product (RoDTEP)\n" +
+    "SUPPLY MEANT FOR EXPORTS ON PAYMENT OF INTEGRATED TAX",
+    { size: 7, italic: true, wrap: true, vAlign: "top" },
+  );
+  ws.getRow(r).height = 40;
   r += 3;
 
-  // ── Signatory ─────────────────────────────────────────────────────────────
   r++; // spacer
-  ws.mergeCells(`A${r}:G${r}`);
-  ws.getCell(`A${r}`).value = "For KOHLICO FOODS AND BEVERAGES PVT. LTD";
-  ws.getCell(`A${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`A${r}`).border = { top: { style: "thin" } };
 
-  ws.mergeCells(`H${r}:N${r}`);
-  ws.getCell(`H${r}`).value = "Received the goods in good order";
-  ws.getCell(`H${r}`).font = { bold: true, size: 9 };
-  ws.getCell(`H${r}`).alignment = { horizontal: "right" };
-  ws.getCell(`H${r}`).border = { top: { style: "thin" } };
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Signatory
+  // ═══════════════════════════════════════════════════════════════════════════
+  ws.mergeCells(`A${r}:F${r}`);
+  setCell(ws, r, 1, "For KOHLICO FOODS AND BEVERAGES PVT. LTD", {
+    bold: true, size: 9, border: { top: { style: "thin" } },
+  });
+  ws.mergeCells(`G${r}:L${r}`);
+  setCell(ws, r, 7, "", {
+    border: { top: { style: "thin" } },
+  });
   r++;
-
-  ws.mergeCells(`A${r}:G${r}`);
-  ws.getCell(`A${r}`).value = "Authorized Signatory";
-  ws.getCell(`A${r}`).font = {
-    size: 8,
-    italic: true,
-    color: { argb: "FF555555" },
-  };
-
-  ws.mergeCells(`H${r}:N${r}`);
-  ws.getCell(`H${r}`).value = "Buyer's Signature & Stamp";
-  ws.getCell(`H${r}`).font = {
-    size: 8,
-    italic: true,
-    color: { argb: "FF555555" },
-  };
-  ws.getCell(`H${r}`).alignment = { horizontal: "right" };
+  ws.mergeCells(`A${r}:F${r}`);
+  setCell(ws, r, 1, "Authorized Signatory", {
+    size: 8, italic: true, color: "FF666666",
+  });
+  ws.mergeCells(`G${r}:L${r}`);
+  setCell(ws, r, 7, "Buyer's Signature & Stamp", {
+    size: 8, italic: true, color: "FF666666", align: "right",
+  });
 
   // ── Return buffer ─────────────────────────────────────────────────────────
   const buffer = await wb.xlsx.writeBuffer();

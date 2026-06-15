@@ -14,15 +14,24 @@ interface NavBarProps {
   };
 }
 
-const navLinks = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/invoices", label: "Invoices" },
-  { href: "/customers", label: "Customers" },
-  { href: "/products", label: "Products" },
-];
+function getNavLinks(role: string) {
+  const links = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/invoices", label: "Invoices" },
+    { href: "/customers", label: "Customers" },
+    { href: "/products", label: "Products" },
+  ];
+
+  if (role === "admin") {
+    links.push({ href: "/users", label: "Users" });
+  }
+
+  return links;
+}
 
 export default function NavBar({ user }: NavBarProps) {
   const pathname = usePathname();
+  const navLinks = getNavLinks(user.role);
 
   return (
     <nav className="border-b border-gray-200 bg-white shadow-sm">

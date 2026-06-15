@@ -1,6 +1,4 @@
 // src/app/api/invoices/[id]/pdf/route.ts
-// GET /api/invoices/:id/pdf — generates and returns the Invoice Cum Packing List PDF.
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -11,13 +9,14 @@ import React from "react";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const invoice = await db.invoice.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       consignee: true,
       buyer: true,

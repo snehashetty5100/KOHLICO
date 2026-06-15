@@ -1,7 +1,4 @@
 // src/app/api/invoices/[id]/route.ts
-// GET  /api/invoices/:id  — full invoice detail with items
-// PUT  /api/invoices/:id  — update status (draft → final) or full edit
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,13 +6,14 @@ import { db } from "@/lib/db";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const invoice = await db.invoice.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       consignee: true,
       buyer: true,
@@ -31,23 +29,22 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
 
-  // Simple status-only update (draft → final)
   if (body.status && Object.keys(body).length === 1) {
     const invoice = await db.invoice.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: body.status },
     });
     return NextResponse.json(invoice);
   }
 
-  // Full update — replace header + all items
   const {
     invoiceNo, invoiceDate, proformaInvNo, proformaDate,
     iecCode, panNo, gstinNo, endUseCode,
@@ -64,7 +61,7 @@ export async function PUT(
 
   const invoice = await db.$transaction(async (tx) => {
     const inv = await tx.invoice.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         invoiceNo, iecCode, panNo, gstinNo,
         invoiceDate: new Date(invoiceDate),
@@ -85,8 +82,7 @@ export async function PUT(
       },
     });
 
-    // Delete old items and re-insert
-    await tx.invoiceItem.deleteMany({ where: { invoiceId: params.id } });
+    await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -126,11 +122,12 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await db.invoice.delete({ where: { id: params.id } });
+  await db.invoice.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

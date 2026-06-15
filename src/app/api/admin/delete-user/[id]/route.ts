@@ -9,9 +9,10 @@ import { db } from "@/lib/db";
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "admin") {
@@ -20,8 +21,6 @@ export async function DELETE(
         { status: 403 },
       );
     }
-
-    const { id } = params;
 
     // Prevent self-deletion.
     if (id === session.user.id) {

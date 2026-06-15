@@ -1,7 +1,4 @@
 // src/app/api/products/[id]/route.ts
-// PUT    /api/products/:id  — update a product
-// DELETE /api/products/:id  — delete a product
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,20 +6,16 @@ import { db } from "@/lib/db";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
   const {
-    description,
-    hsCode,
-    defaultPackaging,
-    defaultRate,
-    defaultNetWeight,
-    defaultGrossWeight,
-    igstRate,
+    description, hsCode, defaultPackaging,
+    defaultRate, defaultNetWeight, defaultGrossWeight, igstRate,
   } = body;
 
   if (!description || !hsCode || defaultRate == null || defaultNetWeight == null || defaultGrossWeight == null) {
@@ -33,10 +26,9 @@ export async function PUT(
   }
 
   const product = await db.product.update({
-    where: { id: params.id },
+    where: { id },
     data: {
-      description,
-      hsCode,
+      description, hsCode,
       defaultPackaging: defaultPackaging || null,
       defaultRate: parseFloat(defaultRate),
       defaultNetWeight: parseFloat(defaultNetWeight),
@@ -50,11 +42,12 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await db.product.delete({ where: { id: params.id } });
+  await db.product.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

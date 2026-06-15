@@ -1,18 +1,15 @@
 // src/app/(dashboard)/invoices/[id]/edit/page.tsx
-// Edit an existing draft invoice.
-
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import InvoiceForm from "@/components/invoice-form";
 
-export default async function EditInvoicePage({
-  params,
-}: {
-  params: { id: string };
+export default async function EditInvoicePage({ params }: {
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const [invoice, customers, products] = await Promise.all([
     db.invoice.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { items: { orderBy: { sortOrder: "asc" } } },
     }),
     db.customer.findMany({ orderBy: { name: "asc" } }),
@@ -20,7 +17,7 @@ export default async function EditInvoicePage({
   ]);
 
   if (!invoice) notFound();
-  if (invoice.status === "final") redirect(`/invoices/${params.id}`);
+  if (invoice.status === "final") redirect(`/invoices/${id}`);
 
   const defaultValues = {
     id: invoice.id,

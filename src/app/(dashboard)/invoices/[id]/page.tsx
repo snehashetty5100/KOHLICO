@@ -7,13 +7,12 @@ import Link from "next/link";
 import FinalizeButton from "./finalize-button";
 import DeleteInvoiceButton from "./delete-button";
 
-export default async function InvoiceDetailPage({
-  params,
-}: {
-  params: { id: string };
+export default async function InvoiceDetailPage({ params }: {
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const invoice = await db.invoice.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       consignee: true,
       buyer: true,
@@ -49,9 +48,8 @@ export default async function InvoiceDetailPage({
           <p className="text-sm text-gray-500">
             {new Date(invoice.invoiceDate).toLocaleDateString("en-IN")} ·{" "}
             <span
-              className={`font-medium ${
-                isDraft ? "text-yellow-600" : "text-green-600"
-              }`}
+              className={`font-medium ${isDraft ? "text-yellow-600" : "text-green-600"
+                }`}
             >
               {invoice.status.toUpperCase()}
             </span>

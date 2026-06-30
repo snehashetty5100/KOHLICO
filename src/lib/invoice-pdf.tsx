@@ -1,6 +1,10 @@
 // src/lib/invoice-pdf.tsx
 // @react-pdf/renderer template — matches the real "Invoice Cum Packing List" layout.
 // Products are grouped by HS code with sub-rows per pack size.
+// PORTRAIT VERSION: column widths scaled ~0.795x to fit A4 portrait width (~563pt usable).
+// Only changes: orientation, column widths (C object), and body/table font sizes
+// (8pt → 7pt) so narrower columns don't wrap/clip. No calculation, field, or
+// structural logic was touched.
 
 import {
   Document,
@@ -148,6 +152,7 @@ const s = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 14,
     paddingHorizontal: 16,
+    flexDirection: "column" as const,
   },
 
   // Title
@@ -177,14 +182,14 @@ const s = StyleSheet.create({
     borderBottom: B,
   },
   th: {
-    fontSize: 6,
+    fontSize: 5.5,
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
     padding: "2 1",
     borderRight: BL,
   },
   thLast: {
-    fontSize: 6,
+    fontSize: 5.5,
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
     padding: "2 1",
@@ -207,14 +212,14 @@ const s = StyleSheet.create({
   sep: { height: 3, borderBottom: BL },
 
   // Data cells
-  dc: { padding: "1 2", borderRight: BL, fontSize: 8 },
-  dcR: { padding: "1 2", borderRight: BL, fontSize: 8, textAlign: "right" },
-  dcLast: { padding: "1 2", fontSize: 8, textAlign: "right" },
-  dcBold: { padding: "1 2", borderRight: BL, fontSize: 8, fontFamily: "Helvetica-Bold" },
+  dc: { padding: "1 2", borderRight: BL, fontSize: 7 },
+  dcR: { padding: "1 2", borderRight: BL, fontSize: 7, textAlign: "right" },
+  dcLast: { padding: "1 2", fontSize: 7, textAlign: "right" },
+  dcBold: { padding: "1 2", borderRight: BL, fontSize: 7, fontFamily: "Helvetica-Bold" },
   dcBoldR: {
     padding: "1 2",
     borderRight: BL,
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: "Helvetica-Bold",
     textAlign: "right",
   },
@@ -236,22 +241,23 @@ const s = StyleSheet.create({
   sigSub: { fontSize: 7, color: "#666", marginTop: 1 },
 });
 
-// ── Column widths (A4 landscape ≈ 810pt usable) ─────────────────────────────
+// ── Column widths (A4 PORTRAIT ≈ 563pt usable — scaled ~0.795x from landscape) ─
 
 const C = {
-  marks: 66,
-  pack: 62,
-  desc: 136,
-  qty: 32,
-  rate: 52,
-  fob: 58,
-  ci: 58,
-  tax: 66,
-  igstP: 26,
-  igstA: 56,
-  netW: 48,
-  grsW: 48,
+  marks: 53,
+  pack: 49,
+  desc: 108,
+  qty: 25,
+  rate: 41,
+  fob: 46,
+  ci: 46,
+  tax: 52,
+  igstP: 21,
+  igstA: 44,
+  netW: 38,
+  grsW: 38,
 };
+// Total: 53+49+108+25+41+46+46+52+21+44+38+38 = 561pt (fits within ~563pt usable width)
 
 // Widths for body rows (11 cols, no marks)
 const BODY_COLS = [
@@ -295,7 +301,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
       >
         <Text
           style={{
-            fontSize: 8,
+            fontSize: 7,
             fontFamily: bold ? "Helvetica-Bold" : "Helvetica",
             textAlign: idx < 2 ? "left" : align,
           }}
@@ -308,7 +314,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
 
   return (
     <Document>
-      <Page size="A4" orientation="landscape" style={s.page}>
+      <Page size="A4" orientation="portrait" style={s.page}>
         {/* ═══ Title ═══ */}
         <Text style={s.title}>INVOICE CUM PACKING LIST</Text>
 
@@ -467,10 +473,10 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
           <View style={s.tableBody}>
             {/* Left: Marks column (spans all group rows) */}
             <View style={[s.marksPanel, { width: C.marks }]}>
-              <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 8 }}>
+              <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 7 }}>
                 {marksText}
               </Text>
-              <Text style={{ fontSize: 7 }}>CTNS NO.</Text>
+              <Text style={{ fontSize: 6 }}>CTNS NO.</Text>
             </View>
 
             {/* Right: Product groups */}
@@ -480,7 +486,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
                   {/* Group header: [n] qty CTNS  PRODUCT NAME [HS CODE: xxx] */}
                   <View style={s.ghRow}>
                     <View style={{ width: C.pack + C.desc, padding: "1 2" }}>
-                      <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 8, textDecoration: "underline" }}>
+                      <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 7, textDecoration: "underline" }}>
                         [{g.index}]{"     "}{g.totalQty} CTNS{"  "}{g.name}{" "}
                         [HS CODE: {g.hsCode}]
                       </Text>
@@ -537,7 +543,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
                         padding: "1 2",
                       }}
                     >
-                      <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold" }}>
+                      <Text style={{ fontSize: 7, fontFamily: "Helvetica-Bold" }}>
                         NT. WT. {fmt(g.totalNetWt, 3)} KGS{"    "}GR. WT.{" "}
                         {fmt(g.totalGrossWt, 3)} KGS
                       </Text>
@@ -563,7 +569,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
                 borderRight: BL,
               }}
             >
-              <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 8 }}>
+              <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 7 }}>
                 (Amount Chargeable in Words) CAD $
               </Text>
             </View>
@@ -572,7 +578,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -584,7 +590,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 7,
+                  fontSize: 6,
                   textAlign: "center",
                 }}
               >
@@ -596,7 +602,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -608,7 +614,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -620,7 +626,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -636,7 +642,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -648,7 +654,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -660,7 +666,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
               <Text
                 style={{
                   fontFamily: "Helvetica-Bold",
-                  fontSize: 8,
+                  fontSize: 7,
                   textAlign: "right",
                 }}
               >
@@ -669,6 +675,9 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
             </View>
           </View>
         </View>
+
+        {/* ═══ Flexible spacer: pushes footer toward page bottom on short invoices ═══ */}
+        <View style={{ flex: 1 }} />
 
         {/* ═══ Footer Summary ═══ */}
         <View style={{ marginTop: 4 }}>

@@ -62,6 +62,8 @@ export async function GET(
       taxableValueINR: it.taxableValueINR,
       igstRate: it.igstRate,
       igstAmountINR: it.igstAmountINR,
+      district: it.district,
+      state: it.state,
     })),
   });
 

@@ -1,10 +1,9 @@
 // src/lib/db.ts
-// Prisma 7 client singleton using @prisma/adapter-pg (driver adapter).
-// A single pg.Pool is reused; in dev, the global prevents connection exhaustion
+// Prisma 7 client singleton using @prisma/adapter-better-sqlite3 (driver adapter).
+// A single instance is reused; in dev, the global prevents exhaustion
 // across Next.js hot-reloads.
 
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
@@ -12,8 +11,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createClient() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaBetterSqlite3({
+    url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
+  });
   return new PrismaClient({
     adapter,
     log:

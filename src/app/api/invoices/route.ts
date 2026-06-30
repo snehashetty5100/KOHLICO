@@ -51,62 +51,70 @@ export async function POST(req: Request) {
 
   const rate = parseFloat(exchangeRate);
 
-  const invoice = await db.$transaction(async (tx) => {
-    const inv = await tx.invoice.create({
-      data: {
-        invoiceNo,
-        invoiceDate: new Date(invoiceDate),
-        proformaInvNo: proformaInvNo || null,
-        proformaDate: proformaDate ? new Date(proformaDate) : null,
-        iecCode, panNo, gstinNo,
-        endUseCode: endUseCode || null,
-        consigneeId,
-        buyerId: buyerId || null,
-        preCarriage, portOfReceipt,
-        vesselFlight: vesselFlight || null,
-        portOfLoading, portOfDischarge, finalDestination,
-        countryOfOrigin: countryOfOrigin || "INDIA",
-        countryOfDestination: countryOfDestination || "CANADA",
-        termsOfDelivery,
-        exchangeRate: rate,
-        insuranceCAD: insuranceCAD ? parseFloat(insuranceCAD) : null,
-        status: "draft",
-        createdById: session.user.id,
-      },
-    });
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const qty = parseInt(item.quantity);
-      const itemRate = parseFloat(item.rate);
-      const fobCAD = qty * itemRate;
-      const igstRate = parseFloat(item.igstRate ?? "0.05");
-      const taxableValueINR = fobCAD * rate;
-      const igstAmountINR = taxableValueINR * igstRate;
-
-      await tx.invoiceItem.create({
+  try {
+    const invoice = await db.$transaction(async (tx) => {
+      const inv = await tx.invoice.create({
         data: {
-          invoiceId: inv.id,
-          productId: item.productId || null,
-          description: item.description,
-          hsCode: item.hsCode,
-          packageDescription: item.packageDescription,
-          marksAndNos: item.marksAndNos || null,
-          quantity: qty,
-          rate: itemRate,
-          fobCAD,
-          netWeight: parseFloat(item.netWeight),
-          grossWeight: parseFloat(item.grossWeight),
-          taxableValueINR,
-          igstRate,
-          igstAmountINR,
-          sortOrder: i,
+          invoiceNo,
+          invoiceDate: new Date(invoiceDate),
+          proformaInvNo: proformaInvNo || null,
+          proformaDate: proformaDate ? new Date(proformaDate) : null,
+          iecCode, panNo, gstinNo,
+          endUseCode: endUseCode || null,
+          consigneeId,
+          buyerId: buyerId || null,
+          preCarriage, portOfReceipt,
+          vesselFlight: vesselFlight || null,
+          portOfLoading, portOfDischarge, finalDestination,
+          countryOfOrigin: countryOfOrigin || "INDIA",
+          countryOfDestination: countryOfDestination || "CANADA",
+          termsOfDelivery,
+          exchangeRate: rate,
+          insuranceCAD: insuranceCAD ? parseFloat(insuranceCAD) : null,
+          status: "draft",
+          createdById: session.user.id,
         },
       });
-    }
 
-    return inv;
-  });
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const qty = parseInt(item.quantity);
+        const itemRate = parseFloat(item.rate);
+        const fobCAD = qty * itemRate;
+        const igstRate = parseFloat(item.igstRate ?? "0.05");
+        const taxableValueINR = fobCAD * rate;
+        const igstAmountINR = taxableValueINR * igstRate;
 
-  return NextResponse.json(invoice, { status: 201 });
+        await tx.invoiceItem.create({
+          data: {
+            invoiceId: inv.id,
+            productId: item.productId || null,
+            description: item.description,
+            hsCode: item.hsCode,
+            packageDescription: item.packageDescription,
+            marksAndNos: item.marksAndNos || null,
+            quantity: qty,
+            rate: itemRate,
+            fobCAD,
+            netWeight: parseFloat(item.netWeight),
+            grossWeight: parseFloat(item.grossWeight),
+            district: item.district || null,
+            state: item.state || null,
+            taxableValueINR,
+            igstRate,
+            igstAmountINR,
+            sortOrder: i,
+          },
+        });
+      }
+
+      return inv;
+    });
+
+    return NextResponse.json(invoice, { status: 201 });
+  } catch (err) {
+    console.error("Invoice creation failed:", err);
+    const message = err instanceof Error ? err.message : "Failed to create invoice";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

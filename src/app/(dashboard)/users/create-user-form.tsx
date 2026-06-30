@@ -12,7 +12,7 @@ const createUserSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(["admin", "user"], {
-    required_error: "Role is required",
+    message: "Role is required",
   }),
 });
 

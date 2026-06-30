@@ -23,6 +23,8 @@ interface Product {
   defaultNetWeight: number;
   defaultGrossWeight: number;
   igstRate: number;
+  originDistrict: string | null;
+  originState: string | null;
 }
 
 interface LineItem {
@@ -36,6 +38,8 @@ interface LineItem {
   netWeight: string;    // per package
   grossWeight: string;  // per package
   igstRate: string;
+  district: string;
+  state: string;
 }
 
 interface InvoiceFormProps {
@@ -76,6 +80,8 @@ interface InvoiceFormProps {
       netWeight: number;
       grossWeight: number;
       igstRate: number;
+      district?: string | null;
+      state?: string | null;
     }[];
   };
 }
@@ -94,6 +100,8 @@ function blankItem(): LineItem {
     netWeight: "",
     grossWeight: "",
     igstRate: "0.05",
+    district: "",
+    state: "",
   };
 }
 
@@ -153,6 +161,8 @@ export default function InvoiceForm({
           netWeight: it.netWeight.toString(),
           grossWeight: it.grossWeight.toString(),
           igstRate: it.igstRate.toString(),
+          district: it.district ?? "",
+          state: it.state ?? "",
         }))
       : [blankItem()]
   );
@@ -191,6 +201,8 @@ export default function InvoiceForm({
               netWeight: p.defaultNetWeight.toString(),
               grossWeight: p.defaultGrossWeight.toString(),
               igstRate: p.igstRate.toString(),
+              district: p.originDistrict ?? "",
+              state: p.originState ?? "",
             }
           : it
       )
@@ -250,22 +262,34 @@ export default function InvoiceForm({
     const url = isEditing ? `/api/invoices/${defaultValues.id}` : "/api/invoices";
     const method = isEditing ? "PUT" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Something went wrong");
+      if (!res.ok) {
+        let message = "Something went wrong";
+        try {
+          const data = await res.json();
+          message = data.error ?? message;
+        } catch {
+          // Response body was not valid JSON (e.g. HTML error page)
+          message = `Server error (${res.status})`;
+        }
+        setError(message);
+        setLoading(false);
+        return;
+      }
+
+      const inv = await res.json();
+      router.push(`/invoices/${inv.id}`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error");
       setLoading(false);
-      return;
     }
-
-    const inv = await res.json();
-    router.push(`/invoices/${inv.id}`);
-    router.refresh();
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────

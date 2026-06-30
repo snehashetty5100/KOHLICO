@@ -59,65 +59,73 @@ export async function PUT(
 
   const rate = parseFloat(exchangeRate);
 
-  const invoice = await db.$transaction(async (tx) => {
-    const inv = await tx.invoice.update({
-      where: { id },
-      data: {
-        invoiceNo, iecCode, panNo, gstinNo,
-        invoiceDate: new Date(invoiceDate),
-        proformaInvNo: proformaInvNo || null,
-        proformaDate: proformaDate ? new Date(proformaDate) : null,
-        endUseCode: endUseCode || null,
-        consigneeId,
-        buyerId: buyerId || null,
-        preCarriage, portOfReceipt,
-        vesselFlight: vesselFlight || null,
-        portOfLoading, portOfDischarge, finalDestination,
-        countryOfOrigin: countryOfOrigin || "INDIA",
-        countryOfDestination: countryOfDestination || "CANADA",
-        termsOfDelivery,
-        exchangeRate: rate,
-        insuranceCAD: insuranceCAD ? parseFloat(insuranceCAD) : null,
-        status: status || "draft",
-      },
-    });
-
-    await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const qty = parseInt(item.quantity);
-      const itemRate = parseFloat(item.rate);
-      const fobCAD = qty * itemRate;
-      const igstRate = parseFloat(item.igstRate ?? "0.05");
-      const taxableValueINR = fobCAD * rate;
-      const igstAmountINR = taxableValueINR * igstRate;
-
-      await tx.invoiceItem.create({
+  try {
+    const invoice = await db.$transaction(async (tx) => {
+      const inv = await tx.invoice.update({
+        where: { id },
         data: {
-          invoiceId: inv.id,
-          productId: item.productId || null,
-          description: item.description,
-          hsCode: item.hsCode,
-          packageDescription: item.packageDescription,
-          marksAndNos: item.marksAndNos || null,
-          quantity: qty,
-          rate: itemRate,
-          fobCAD,
-          netWeight: parseFloat(item.netWeight),
-          grossWeight: parseFloat(item.grossWeight),
-          taxableValueINR,
-          igstRate,
-          igstAmountINR,
-          sortOrder: i,
+          invoiceNo, iecCode, panNo, gstinNo,
+          invoiceDate: new Date(invoiceDate),
+          proformaInvNo: proformaInvNo || null,
+          proformaDate: proformaDate ? new Date(proformaDate) : null,
+          endUseCode: endUseCode || null,
+          consigneeId,
+          buyerId: buyerId || null,
+          preCarriage, portOfReceipt,
+          vesselFlight: vesselFlight || null,
+          portOfLoading, portOfDischarge, finalDestination,
+          countryOfOrigin: countryOfOrigin || "INDIA",
+          countryOfDestination: countryOfDestination || "CANADA",
+          termsOfDelivery,
+          exchangeRate: rate,
+          insuranceCAD: insuranceCAD ? parseFloat(insuranceCAD) : null,
+          status: status || "draft",
         },
       });
-    }
 
-    return inv;
-  });
+      await tx.invoiceItem.deleteMany({ where: { invoiceId: id } });
 
-  return NextResponse.json(invoice);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const qty = parseInt(item.quantity);
+        const itemRate = parseFloat(item.rate);
+        const fobCAD = qty * itemRate;
+        const igstRate = parseFloat(item.igstRate ?? "0.05");
+        const taxableValueINR = fobCAD * rate;
+        const igstAmountINR = taxableValueINR * igstRate;
+
+        await tx.invoiceItem.create({
+          data: {
+            invoiceId: inv.id,
+            productId: item.productId || null,
+            description: item.description,
+            hsCode: item.hsCode,
+            packageDescription: item.packageDescription,
+            marksAndNos: item.marksAndNos || null,
+            quantity: qty,
+            rate: itemRate,
+            fobCAD,
+            netWeight: parseFloat(item.netWeight),
+            grossWeight: parseFloat(item.grossWeight),
+            district: item.district || null,
+            state: item.state || null,
+            taxableValueINR,
+            igstRate,
+            igstAmountINR,
+            sortOrder: i,
+          },
+        });
+      }
+
+      return inv;
+    });
+
+    return NextResponse.json(invoice);
+  } catch (err) {
+    console.error("Invoice update failed:", err);
+    const message = err instanceof Error ? err.message : "Failed to update invoice";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function DELETE(

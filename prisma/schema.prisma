@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 // ─────────────────────────────────────────────
@@ -19,12 +19,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -83,7 +83,7 @@ model User {
 model Customer {
   id            String   @id @default(cuid())
   name          String
-  address       String   @db.Text
+  address       String
   country       String
   contactPerson String?
   phone         String?
@@ -112,6 +112,8 @@ model Product {
   defaultNetWeight   Float    // kg per package (default)
   defaultGrossWeight Float    // kg per package (default)
   igstRate           Float    @default(0.05) // 5% for exports
+  originDistrict     String?  // e.g. "THANE" — origin district for export docs
+  originState        String?  // e.g. "MAHARASHTRA" — origin state for export docs
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -186,7 +188,7 @@ model InvoiceItem {
   product   Product? @relation(fields: [productId], references: [id])
 
   // Fields on the actual invoice (may differ from product defaults)
-  description        String  @db.Text // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
+  description        String  // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
   hsCode             String  // e.g. "21069099"
   packageDescription String  // e.g. "20 X 400 GM"
   marksAndNos        String? // e.g. "KFBPL/VANCOUVER CTNS NO."
@@ -197,6 +199,10 @@ model InvoiceItem {
 
   netWeight   Float // total net weight for this line (kg)
   grossWeight Float // total gross weight for this line (kg)
+
+  // Origin location (for export documentation)
+  district String? // e.g. "THANE" — manufacturing/origin district
+  state    String? // e.g. "MAHARASHTRA" — manufacturing/origin state
 
   // INR-side calculations (stored for PDF accuracy)
   taxableValueINR Float // = fobCAD × invoice.exchangeRate

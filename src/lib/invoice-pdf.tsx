@@ -13,23 +13,17 @@ import {
   Text,
   StyleSheet,
 } from "@react-pdf/renderer";
+import {
+  fmtDate,
+  buildGroups,
+  calculateTotals,
+  SharedInvoiceItem,
+  SharedProductGroup,
+} from "@/lib/invoice-shared";
 
 // ── Types (unchanged — must match API route data shape) ──────────────────────
 
-export interface PdfInvoiceItem {
-  description: string;
-  hsCode: string;
-  packageDescription: string;
-  marksAndNos: string | null;
-  quantity: number;
-  rate: number;
-  fobCAD: number;
-  netWeight: number;
-  grossWeight: number;
-  taxableValueINR: number;
-  igstRate: number;
-  igstAmountINR: number;
-}
+export type PdfInvoiceItem = SharedInvoiceItem;
 
 export interface PdfInvoiceData {
   invoiceNo: string;
@@ -61,83 +55,12 @@ export interface PdfInvoiceData {
 
 // ── Internal: product grouping ───────────────────────────────────────────────
 
-interface ProductGroup {
-  index: number;
-  name: string;
-  hsCode: string;
-  totalQty: number;
-  totalFob: number;
-  totalCi: number;
-  totalTaxINR: number;
-  totalIgstINR: number;
-  totalNetWt: number;
-  totalGrossWt: number;
-  ratePerKg: number;
-  items: PdfInvoiceItem[];
-}
-
-/** Find the longest common prefix of a list of strings, splitting on whitespace. */
-function commonPrefix(strs: string[]): string {
-  if (strs.length === 0) return "";
-  if (strs.length === 1) return strs[0];
-  const words = strs.map((s) => s.trim().split(/\s+/));
-  const result: string[] = [];
-  for (let i = 0; i < Math.min(...words.map((w) => w.length)); i++) {
-    if (words.every((w) => w[i].toUpperCase() === words[0][i].toUpperCase())) {
-      result.push(words[0][i]);
-    } else break;
-  }
-  return result.length > 0 ? result.join(" ") : strs[0];
-}
-
-function buildGroups(
-  items: PdfInvoiceItem[],
-  totalFob: number,
-  insCAD: number,
-): ProductGroup[] {
-  const map = new Map<string, PdfInvoiceItem[]>();
-  for (const item of items) {
-    if (!map.has(item.hsCode)) map.set(item.hsCode, []);
-    map.get(item.hsCode)!.push(item);
-  }
-  const insRate = totalFob > 0 ? insCAD / totalFob : 0;
-
-  return Array.from(map.entries()).map(([hsCode, groupItems], idx) => {
-    const totalQty = groupItems.reduce((s, i) => s + i.quantity, 0);
-    const totalFobG = groupItems.reduce((s, i) => s + i.fobCAD, 0);
-    const totalTaxINR = groupItems.reduce((s, i) => s + i.taxableValueINR, 0);
-    const totalIgstINR = groupItems.reduce((s, i) => s + i.igstAmountINR, 0);
-    const totalNetWt = groupItems.reduce((s, i) => s + i.netWeight, 0);
-    const totalGrossWt = groupItems.reduce((s, i) => s + i.grossWeight, 0);
-    return {
-      index: idx + 1,
-      name: commonPrefix(groupItems.map((i) => i.description)),
-      hsCode,
-      totalQty,
-      totalFob: totalFobG,
-      totalCi: totalFobG * (1 + insRate),
-      totalTaxINR,
-      totalIgstINR,
-      totalNetWt,
-      totalGrossWt,
-      ratePerKg: totalNetWt > 0 ? totalFobG / totalNetWt : 0,
-      items: groupItems,
-    };
-  });
-}
+type ProductGroup = SharedProductGroup<PdfInvoiceItem>;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(v: number, d = 2): string {
   return v.toFixed(d);
-}
-
-function fmtDate(d: Date): string {
-  return new Date(d).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
 }
 
 // ── Styles ──────────────────────────────────────────────────────────────────
@@ -269,19 +192,8 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
   const insCAD = data.insuranceCAD ?? 0;
 
   // Grand totals
-  const totals = data.items.reduce(
-    (a, i) => ({
-      pkgs: a.pkgs + i.quantity,
-      fob: a.fob + i.fobCAD,
-      tax: a.tax + i.taxableValueINR,
-      igst: a.igst + i.igstAmountINR,
-      net: a.net + i.netWeight,
-      grs: a.grs + i.grossWeight,
-    }),
-    { pkgs: 0, fob: 0, tax: 0, igst: 0, net: 0, grs: 0 },
-  );
-  const insRate = totals.fob > 0 ? insCAD / totals.fob : 0;
-  const totalCi = totals.fob * (1 + insRate);
+  const totals = calculateTotals(data.items, insCAD);
+  const { insRate, totalCi } = totals;
 
   const groups = buildGroups(data.items, totals.fob, insCAD);
   const marksText = data.items[0]?.marksAndNos ?? "";

@@ -152,7 +152,6 @@ const s = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 14,
     paddingHorizontal: 16,
-    flexDirection: "column" as const,
   },
 
   // Title
@@ -287,6 +286,28 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
   const groups = buildGroups(data.items, totals.fob, insCAD);
   const marksText = data.items[0]?.marksAndNos ?? "";
 
+  // ── Adaptive spacing: scale sizes based on item count ──────────────────────
+  // Lerp between compact (10+ rows) and spacious (1 row) for visual balance.
+  const totalItemRows = data.items.length;
+  const COMPACT_THRESHOLD = 10;
+  const t = Math.max(0, Math.min(1, (COMPACT_THRESHOLD - totalItemRows) / (COMPACT_THRESHOLD - 1)));
+  const lerp = (compact: number, spacious: number) =>
+    Math.round((compact + t * (spacious - compact)) * 100) / 100;
+
+  // Scaled values — compact → spacious (capped)
+  const bodyFs   = lerp(7, 8.5);   // table body font size
+  const cellPadV = lerp(1, 4);     // data-cell vertical padding
+  const cellPadH = lerp(2, 3);     // data-cell horizontal padding
+  const ghPadV   = lerp(1, 3);     // group-header row vertical padding
+  const tableMt  = lerp(3, 24);    // marginTop above product table
+  const footerMt = lerp(4, 24);    // marginTop above footer summary
+  const declMt   = lerp(6, 26);    // marginTop above declaration
+  const declLh   = lerp(1.5, 2.0); // declaration line-height
+  const sigMt    = lerp(28, 80);   // marginTop above signature block
+  const sepH     = lerp(3, 12);    // separator height between groups
+  const titleMb  = lerp(2, 10);    // title marginBottom
+  // ──────────────────────────────────────────────────────────────────────────
+
   /** Render a cell in the 11-col body (index 0–10). */
   function BC(idx: number, text: string, bold = false, align: "left" | "right" = "right") {
     const isLast = idx === 10;
@@ -296,12 +317,12 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
         style={{
           width: BODY_COLS[idx],
           borderRight: isLast ? undefined : BL,
-          padding: "1 2",
+          padding: `${cellPadV} ${cellPadH}`,
         }}
       >
         <Text
           style={{
-            fontSize: 7,
+            fontSize: bodyFs,
             fontFamily: bold ? "Helvetica-Bold" : "Helvetica",
             textAlign: idx < 2 ? "left" : align,
           }}
@@ -316,7 +337,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
     <Document>
       <Page size="A4" orientation="portrait" style={s.page}>
         {/* ═══ Title ═══ */}
-        <Text style={s.title}>INVOICE CUM PACKING LIST</Text>
+        <Text style={[s.title, { marginBottom: titleMb }]}>INVOICE CUM PACKING LIST</Text>
 
         {/* ═══ Header Info Grid ═══ */}
         <View style={s.grid}>
@@ -436,7 +457,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
         </View>
 
         {/* ═══ Product Table ═══ */}
-        <View style={s.table}>
+        <View style={[s.table, { marginTop: tableMt }]}>
           {/* ── Table Header ── */}
           <View style={s.thRow}>
             <Text style={[s.th, { width: C.marks }]}>{"Marks &\nNos."}</Text>
@@ -473,10 +494,10 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
           <View style={s.tableBody}>
             {/* Left: Marks column (spans all group rows) */}
             <View style={[s.marksPanel, { width: C.marks }]}>
-              <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 7 }}>
+              <Text style={{ fontFamily: "Helvetica-Bold", fontSize: bodyFs }}>
                 {marksText}
               </Text>
-              <Text style={{ fontSize: 6 }}>CTNS NO.</Text>
+              <Text style={{ fontSize: bodyFs - 1 }}>CTNS NO.</Text>
             </View>
 
             {/* Right: Product groups */}
@@ -485,8 +506,8 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
                 <View key={g.hsCode}>
                   {/* Group header: [n] qty CTNS  PRODUCT NAME [HS CODE: xxx] */}
                   <View style={s.ghRow}>
-                    <View style={{ width: C.pack + C.desc, padding: "1 2" }}>
-                      <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 7, textDecoration: "underline" }}>
+                    <View style={{ width: C.pack + C.desc, padding: `${ghPadV} ${cellPadH}` }}>
+                      <Text style={{ fontFamily: "Helvetica-Bold", fontSize: bodyFs, textDecoration: "underline" }}>
                         [{g.index}]{"     "}{g.totalQty} CTNS{"  "}{g.name}{" "}
                         [HS CODE: {g.hsCode}]
                       </Text>
@@ -540,10 +561,10 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
                     <View
                       style={{
                         width: C.pack + C.desc + C.qty + C.rate,
-                        padding: "1 2",
+                        padding: `${cellPadV} ${cellPadH}`,
                       }}
                     >
-                      <Text style={{ fontSize: 7, fontFamily: "Helvetica-Bold" }}>
+                      <Text style={{ fontSize: bodyFs, fontFamily: "Helvetica-Bold" }}>
                         NT. WT. {fmt(g.totalNetWt, 3)} KGS{"    "}GR. WT.{" "}
                         {fmt(g.totalGrossWt, 3)} KGS
                       </Text>
@@ -553,7 +574,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
                   </View>
 
                   {/* Blank separator between groups */}
-                  <View style={s.sep} />
+                  <View style={[s.sep, { height: sepH }]} />
                 </View>
               ))}
             </View>
@@ -676,11 +697,8 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
           </View>
         </View>
 
-        {/* ═══ Flexible spacer: pushes footer toward page bottom on short invoices ═══ */}
-        <View style={{ flex: 1 }} />
-
         {/* ═══ Footer Summary ═══ */}
-        <View style={{ marginTop: 4 }}>
+        <View style={{ marginTop: footerMt }}>
           <Text style={s.footerLine}>
             TTL NO.OF PKGS.{"  "}{totals.pkgs}
           </Text>
@@ -698,7 +716,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
         </View>
 
         {/* ═══ Declaration ═══ */}
-        <Text style={s.decl}>
+        <Text style={[s.decl, { marginTop: declMt, lineHeight: declLh }]}>
           We declare that this invoice shows the actual price of the goods
           described and that all particulars are true and correct.{"\n"}
           We intend to claim rewards under Remission of Duties & Taxes on
@@ -707,7 +725,7 @@ export function InvoicePDF({ data }: { data: PdfInvoiceData }) {
         </Text>
 
         {/* ═══ Signatory ═══ */}
-        <View style={s.sigRow}>
+        <View style={[s.sigRow, { marginTop: sigMt }]}>
           <View style={s.sigBlock}>
             <Text style={s.sigLine}>
               For KOHLICO FOODS AND BEVERAGES PVT. LTD

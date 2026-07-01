@@ -8,6 +8,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import CreateUserForm from "./create-user-form";
 import DeleteUserButton from "./delete-user-button";
+import EditUserButton from "./edit-user-button";
 
 export default async function UsersPage() {
   const session = await getServerSession(authOptions);
@@ -82,11 +83,14 @@ export default async function UsersPage() {
                     {new Date(u.createdAt).toLocaleDateString("en-CA")}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {u.id === session.user.id ? (
-                      <span className="text-xs text-gray-400">You</span>
-                    ) : (
-                      <DeleteUserButton id={u.id} email={u.email} />
-                    )}
+                    <div className="flex items-center justify-end gap-3">
+                      <EditUserButton user={u} currentUserId={session.user.id} />
+                      {u.id === session.user.id ? (
+                        <span className="text-xs text-gray-400">You</span>
+                      ) : (
+                        <DeleteUserButton id={u.id} email={u.email} />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

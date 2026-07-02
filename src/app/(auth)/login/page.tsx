@@ -44,23 +44,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-gray-50/50 dark:bg-[#0b0e14]">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          <div className="mx-auto bg-primary-600 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold shadow-md mb-6">
+            K
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-950 dark:text-white">
             Kohlico Invoices
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Sign in to your account to continue
+          <p className="mt-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
+            Sign in to your billing account to continue
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="glass-card p-8 sm:p-10 rounded-2xl">
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
             {serverError && (
-              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+              <div className="rounded-xl bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/50">
                 {serverError}
               </div>
             )}
@@ -69,7 +72,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
               >
                 Email address
               </label>
@@ -78,11 +81,11 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 {...register("email")}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 outline-none disabled:opacity-50"
                 placeholder="you@example.com"
               />
               {errors.email && (
-                <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
+                <p className="mt-1.5 text-xs text-red-650 dark:text-red-400 font-semibold">{errors.email.message}</p>
               )}
             </div>
 
@@ -90,7 +93,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
               >
                 Password
               </label>
@@ -99,24 +102,26 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 {...register("password")}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 outline-none disabled:opacity-50"
                 placeholder="••••••••"
               />
               {errors.password && (
-                <p className="mt-1 text-xs text-red-600">
+                <p className="mt-1.5 text-xs text-red-655 dark:text-red-400 font-semibold">
                   {errors.password.message}
                 </p>
               )}
             </div>
 
             {/* Submit */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Signing in…" : "Sign in"}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-xs hover:bg-primary-500 transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? "Signing in…" : "Sign in"}
+              </button>
+            </div>
           </form>
         </div>
       </div>

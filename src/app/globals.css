@@ -1,39 +1,81 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+:root {
+  --background: #f7f7f8;
+  --foreground: #0b0e14;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0e14;
+    --foreground: #f7f7f8;
+    --card-bg: #111827;
+    --card-border: #1f2937;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure typed text in form fields is always dark/readable on white backgrounds,
-   regardless of dark-mode CSS variable inheritance. */
-input,
-select,
-textarea {
-  color: #000000 !important; /* black — always readable */
+/* Premium Card Utility */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/50 shadow-sm;
+  }
+  .glass-card {
+    @apply bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-none rounded-2xl transition-all duration-200;
+  }
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: #9ca3af !important; /* gray-400 — subtle placeholder text */
+/* Premium Form Inputs Override */
+input, select, textarea {
+  @apply bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 rounded-xl px-4 py-2.5 text-sm transition-all duration-150 focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none;
+}
+
+input::placeholder, textarea::placeholder {
+  @apply text-gray-400 dark:text-gray-500;
+}
+
+/* Smooth Transitions & Interactions */
+button, a {
+  @apply transition-all duration-150 ease-in-out active:scale-[0.98];
+}
+
+/* Custom Scrollbar for Premium Feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700;
 }

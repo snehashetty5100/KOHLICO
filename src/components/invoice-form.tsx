@@ -4,6 +4,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -27,20 +30,85 @@ interface Product {
   originState: string | null;
 }
 
-interface LineItem {
-  productId: string;
-  description: string;
-  hsCode: string;
-  packageDescription: string;
-  marksAndNos: string;
-  quantity: string;
-  rate: string;
-  netWeight: string;    // per package
-  grossWeight: string;  // per package
-  igstRate: string;
-  district: string;
-  state: string;
-}
+// ── Validation Schema ─────────────────────────────────────────────────────────
+
+const lineItemSchema = z.object({
+  productId: z.string().optional(),
+  description: z.string().min(1, "Description is required"),
+  hsCode: z.string().min(1, "HS Code is required"),
+  packageDescription: z.string().min(1, "Package description is required"),
+  marksAndNos: z.string().optional(),
+  quantity: z
+    .string()
+    .min(1, "Quantity is required")
+    .refine((val) => {
+      const parsed = parseInt(val, 10);
+      return !isNaN(parsed) && Number.isInteger(parsed) && parsed >= 1;
+    }, "Quantity must be an integer >= 1"),
+  rate: z
+    .string()
+    .min(1, "Rate is required")
+    .refine((val) => {
+      const parsed = parseFloat(val);
+      return !isNaN(parsed) && parsed >= 0;
+    }, "Rate must be a non-negative number"),
+  netWeight: z
+    .string()
+    .min(1, "Net weight is required")
+    .refine((val) => {
+      const parsed = parseFloat(val);
+      return !isNaN(parsed) && parsed >= 0;
+    }, "Net weight must be a non-negative number"),
+  grossWeight: z
+    .string()
+    .min(1, "Gross weight is required")
+    .refine((val) => {
+      const parsed = parseFloat(val);
+      return !isNaN(parsed) && parsed >= 0;
+    }, "Gross weight must be a non-negative number"),
+  igstRate: z
+    .string()
+    .optional()
+    .refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 1), {
+      message: "IGST rate must be between 0 and 1",
+    }),
+  district: z.string().optional(),
+  state: z.string().optional(),
+});
+
+const invoiceSchema = z.object({
+  invoiceNo: z.string().min(1, "Invoice number is required"),
+  invoiceDate: z.string().min(1, "Invoice date is required"),
+  proformaInvNo: z.string().optional(),
+  proformaDate: z.string().optional(),
+  iecCode: z.string().min(1, "IEC Code is required"),
+  panNo: z.string().min(1, "PAN No is required"),
+  gstinNo: z.string().min(1, "GSTIN No is required"),
+  endUseCode: z.string().optional(),
+  consigneeId: z.string().min(1, "Consignee is required"),
+  buyerId: z.string().optional(),
+  preCarriage: z.string().min(1, "Pre-carriage is required"),
+  portOfReceipt: z.string().min(1, "Port of receipt is required"),
+  vesselFlight: z.string().optional(),
+  portOfLoading: z.string().min(1, "Port of loading is required"),
+  portOfDischarge: z.string().min(1, "Port of discharge is required"),
+  finalDestination: z.string().min(1, "Final destination is required"),
+  countryOfOrigin: z.string().optional(),
+  countryOfDestination: z.string().optional(),
+  termsOfDelivery: z.string().min(1, "Terms of delivery is required"),
+  exchangeRate: z
+    .string()
+    .min(1, "Exchange rate is required")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, "Exchange rate must be a non-negative number"),
+  insuranceCAD: z
+    .string()
+    .optional()
+    .refine((val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0), "Insurance must be a non-negative number"),
+  status: z.string().optional(),
+  items: z.array(lineItemSchema).min(1, "At least one item is required"),
+});
+
+type InvoiceValues = z.infer<typeof invoiceSchema>;
 
 interface InvoiceFormProps {
   customers: Customer[];
@@ -88,7 +156,7 @@ interface InvoiceFormProps {
 
 // ── Blank line item ────────────────────────────────────────────────────────────
 
-function blankItem(): LineItem {
+function blankItem() {
   return {
     productId: "",
     description: "",
@@ -122,110 +190,98 @@ export default function InvoiceForm({
   const router = useRouter();
   const isEditing = !!defaultValues;
 
-  // ── Header state ────────────────────────────────────────────────────────────
-  const [header, setHeader] = useState({
-    invoiceNo: defaultValues?.invoiceNo ?? "",
-    invoiceDate: defaultValues?.invoiceDate?.slice(0, 10) ?? "",
-    proformaInvNo: defaultValues?.proformaInvNo ?? "",
-    proformaDate: defaultValues?.proformaDate?.slice(0, 10) ?? "",
-    iecCode: defaultValues?.iecCode ?? "0302068180",
-    panNo: defaultValues?.panNo ?? "AACCK0018J",
-    gstinNo: defaultValues?.gstinNo ?? "27AACCK0018J1ZS",
-    endUseCode: defaultValues?.endUseCode ?? "FSH190, GNX100",
-    consigneeId: defaultValues?.consigneeId ?? "",
-    buyerId: defaultValues?.buyerId ?? "",
-    preCarriage: defaultValues?.preCarriage ?? "BY SEA",
-    portOfReceipt: defaultValues?.portOfReceipt ?? "JNPT",
-    vesselFlight: defaultValues?.vesselFlight ?? "",
-    portOfLoading: defaultValues?.portOfLoading ?? "JNPT",
-    portOfDischarge: defaultValues?.portOfDischarge ?? "VANCOUVER",
-    finalDestination: defaultValues?.finalDestination ?? "VANCOUVER",
-    countryOfOrigin: defaultValues?.countryOfOrigin ?? "INDIA",
-    countryOfDestination: defaultValues?.countryOfDestination ?? "CANADA",
-    termsOfDelivery: defaultValues?.termsOfDelivery ?? "C & I CAD $ BY SEA",
-    exchangeRate: defaultValues?.exchangeRate?.toString() ?? "",
-    insuranceCAD: defaultValues?.insuranceCAD?.toString() ?? "",
-  });
-
-  // ── Line items state ────────────────────────────────────────────────────────
-  const [items, setItems] = useState<LineItem[]>(
-    defaultValues?.items.length
-      ? defaultValues.items.map((it) => ({
-          productId: it.productId ?? "",
-          description: it.description,
-          hsCode: it.hsCode,
-          packageDescription: it.packageDescription,
-          marksAndNos: it.marksAndNos ?? "",
-          quantity: it.quantity.toString(),
-          rate: it.rate.toString(),
-          netWeight: it.netWeight.toString(),
-          grossWeight: it.grossWeight.toString(),
-          igstRate: it.igstRate.toString(),
-          district: it.district ?? "",
-          state: it.state ?? "",
-        }))
-      : [blankItem()]
-  );
-
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ── Header change handler ───────────────────────────────────────────────────
-  function setH(field: string, value: string) {
-    setHeader((prev) => ({ ...prev, [field]: value }));
-  }
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<InvoiceValues>({
+    resolver: zodResolver(invoiceSchema),
+    defaultValues: {
+      invoiceNo: defaultValues?.invoiceNo ?? "",
+      invoiceDate: defaultValues?.invoiceDate?.slice(0, 10) ?? "",
+      proformaInvNo: defaultValues?.proformaInvNo ?? "",
+      proformaDate: defaultValues?.proformaDate?.slice(0, 10) ?? "",
+      iecCode: defaultValues?.iecCode ?? "0302068180",
+      panNo: defaultValues?.panNo ?? "AACCK0018J",
+      gstinNo: defaultValues?.gstinNo ?? "27AACCK0018J1ZS",
+      endUseCode: defaultValues?.endUseCode ?? "FSH190, GNX100",
+      consigneeId: defaultValues?.consigneeId ?? "",
+      buyerId: defaultValues?.buyerId ?? "",
+      preCarriage: defaultValues?.preCarriage ?? "BY SEA",
+      portOfReceipt: defaultValues?.portOfReceipt ?? "JNPT",
+      vesselFlight: defaultValues?.vesselFlight ?? "",
+      portOfLoading: defaultValues?.portOfLoading ?? "JNPT",
+      portOfDischarge: defaultValues?.portOfDischarge ?? "VANCOUVER",
+      finalDestination: defaultValues?.finalDestination ?? "VANCOUVER",
+      countryOfOrigin: defaultValues?.countryOfOrigin ?? "INDIA",
+      countryOfDestination: defaultValues?.countryOfDestination ?? "CANADA",
+      termsOfDelivery: defaultValues?.termsOfDelivery ?? "C & I CAD $ BY SEA",
+      exchangeRate: defaultValues?.exchangeRate?.toString() ?? "",
+      insuranceCAD: defaultValues?.insuranceCAD?.toString() ?? "",
+      status: defaultValues?.status ?? "draft",
+      items: defaultValues?.items.length
+        ? defaultValues.items.map((it) => ({
+            productId: it.productId ?? "",
+            description: it.description,
+            hsCode: it.hsCode,
+            packageDescription: it.packageDescription,
+            marksAndNos: it.marksAndNos ?? "",
+            quantity: it.quantity.toString(),
+            rate: it.rate.toString(),
+            netWeight: it.netWeight.toString(),
+            grossWeight: it.grossWeight.toString(),
+            igstRate: it.igstRate.toString(),
+            district: it.district ?? "",
+            state: it.state ?? "",
+          }))
+        : [blankItem()],
+    },
+  });
 
-  // ── Line item handlers ──────────────────────────────────────────────────────
-  function setItem(index: number, field: keyof LineItem, value: string) {
-    setItems((prev) =>
-      prev.map((it, i) => (i === index ? { ...it, [field]: value } : it))
-    );
-  }
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items",
+  });
+
+  // ── Product Catalog Auto-Fill ────────────────────────────────────────────────
 
   function selectProduct(index: number, productId: string) {
     const p = products.find((pr) => pr.id === productId);
     if (!p) {
-      setItem(index, "productId", "");
+      setValue(`items.${index}.productId`, "");
       return;
     }
-    setItems((prev) =>
-      prev.map((it, i) =>
-        i === index
-          ? {
-              ...it,
-              productId: p.id,
-              description: p.description,
-              hsCode: p.hsCode,
-              packageDescription: p.defaultPackaging ?? "",
-              rate: p.defaultRate.toString(),
-              netWeight: p.defaultNetWeight.toString(),
-              grossWeight: p.defaultGrossWeight.toString(),
-              igstRate: p.igstRate.toString(),
-              district: p.originDistrict ?? "",
-              state: p.originState ?? "",
-            }
-          : it
-      )
-    );
+    setValue(`items.${index}.productId`, p.id);
+    setValue(`items.${index}.description`, p.description, { shouldValidate: true });
+    setValue(`items.${index}.hsCode`, p.hsCode, { shouldValidate: true });
+    setValue(`items.${index}.packageDescription`, p.defaultPackaging ?? "", { shouldValidate: true });
+    setValue(`items.${index}.rate`, p.defaultRate.toString(), { shouldValidate: true });
+    setValue(`items.${index}.netWeight`, p.defaultNetWeight.toString(), { shouldValidate: true });
+    setValue(`items.${index}.grossWeight`, p.defaultGrossWeight.toString(), { shouldValidate: true });
+    setValue(`items.${index}.igstRate`, p.igstRate.toString(), { shouldValidate: true });
+    setValue(`items.${index}.district`, p.originDistrict ?? "", { shouldValidate: true });
+    setValue(`items.${index}.state`, p.originState ?? "", { shouldValidate: true });
   }
 
-  function addItem() {
-    setItems((prev) => [...prev, blankItem()]);
-  }
+  // ── Calculations Watchers ────────────────────────────────────────────────────
 
-  function removeItem(index: number) {
-    setItems((prev) => prev.filter((_, i) => i !== index));
-  }
+  const exchangeRateWatch = watch("exchangeRate");
+  const insuranceCADWatch = watch("insuranceCAD");
+  const itemsWatch = watch("items");
 
-  // ── Calculated values ───────────────────────────────────────────────────────
-  const exRate = parseFloat(header.exchangeRate) || 0;
+  const exRate = parseFloat(exchangeRateWatch || "") || 0;
 
-  function calcItem(it: LineItem) {
-    const qty = parseFloat(it.quantity) || 0;
-    const rate = parseFloat(it.rate) || 0;
-    const netWt = parseFloat(it.netWeight) || 0;
-    const grossWt = parseFloat(it.grossWeight) || 0;
-    const igst = parseFloat(it.igstRate) || 0.05;
+  function calcItem(it: any) {
+    const qty = parseFloat(it?.quantity) || 0;
+    const rate = parseFloat(it?.rate) || 0;
+    const netWt = parseFloat(it?.netWeight) || 0;
+    const grossWt = parseFloat(it?.grossWeight) || 0;
+    const igst = parseFloat(it?.igstRate) || 0.05;
     const fobCAD = qty * rate;
     const taxableINR = fobCAD * exRate;
     const igstINR = taxableINR * igst;
@@ -234,7 +290,7 @@ export default function InvoiceForm({
     return { fobCAD, taxableINR, igstINR, totalNetWt, totalGrossWt };
   }
 
-  const totals = items.reduce(
+  const totals = (itemsWatch || []).reduce(
     (acc, it) => {
       const c = calcItem(it);
       return {
@@ -243,22 +299,20 @@ export default function InvoiceForm({
         igstINR: acc.igstINR + c.igstINR,
         netWt: acc.netWt + c.totalNetWt,
         grossWt: acc.grossWt + c.totalGrossWt,
-        pkgs: acc.pkgs + (parseInt(it.quantity) || 0),
+        pkgs: acc.pkgs + (parseInt(it?.quantity, 10) || 0),
       };
     },
     { fobCAD: 0, taxableINR: 0, igstINR: 0, netWt: 0, grossWt: 0, pkgs: 0 }
   );
 
-  const insCAD = parseFloat(header.insuranceCAD) || 0;
+  const insCAD = parseFloat(insuranceCADWatch || "") || 0;
   const ciCAD = totals.fobCAD + insCAD;
 
   // ── Submit ──────────────────────────────────────────────────────────────────
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+
+  async function onSubmit(data: InvoiceValues) {
     setError("");
 
-    const payload = { ...header, items };
     const url = isEditing ? `/api/invoices/${defaultValues.id}` : "/api/invoices";
     const method = isEditing ? "PUT" : "POST";
 
@@ -266,20 +320,19 @@ export default function InvoiceForm({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
         let message = "Something went wrong";
         try {
-          const data = await res.json();
-          message = data.error ?? message;
+          const json = await res.json();
+          message = json.error ?? message;
         } catch {
           // Response body was not valid JSON (e.g. HTML error page)
           message = `Server error (${res.status})`;
         }
         setError(message);
-        setLoading(false);
         return;
       }
 
@@ -288,7 +341,6 @@ export default function InvoiceForm({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
-      setLoading(false);
     }
   }
 
@@ -299,7 +351,7 @@ export default function InvoiceForm({
   const labelCls = "block text-xs font-medium text-gray-600 mb-1";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
       {error && (
         <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 border border-red-200">
           {error}
@@ -314,24 +366,31 @@ export default function InvoiceForm({
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <label className={labelCls}>Invoice No *</label>
-            <input className={inputCls} required value={header.invoiceNo}
-              onChange={(e) => setH("invoiceNo", e.target.value)}
-              placeholder="KF/1902/25-26" />
+            <input className={inputCls} {...register("invoiceNo")} placeholder="KF/1902/25-26" />
+            {errors.invoiceNo && (
+              <p className="mt-1 text-xs text-red-600">{errors.invoiceNo.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Invoice Date *</label>
-            <input type="date" className={inputCls} required value={header.invoiceDate}
-              onChange={(e) => setH("invoiceDate", e.target.value)} />
+            <input type="date" className={inputCls} {...register("invoiceDate")} />
+            {errors.invoiceDate && (
+              <p className="mt-1 text-xs text-red-600">{errors.invoiceDate.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Proforma Invoice No</label>
-            <input className={inputCls} value={header.proformaInvNo}
-              onChange={(e) => setH("proformaInvNo", e.target.value)} />
+            <input className={inputCls} {...register("proformaInvNo")} />
+            {errors.proformaInvNo && (
+              <p className="mt-1 text-xs text-red-600">{errors.proformaInvNo.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Proforma Date</label>
-            <input type="date" className={inputCls} value={header.proformaDate}
-              onChange={(e) => setH("proformaDate", e.target.value)} />
+            <input type="date" className={inputCls} {...register("proformaDate")} />
+            {errors.proformaDate && (
+              <p className="mt-1 text-xs text-red-600">{errors.proformaDate.message}</p>
+            )}
           </div>
         </div>
       </section>
@@ -344,24 +403,31 @@ export default function InvoiceForm({
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <label className={labelCls}>IEC Code *</label>
-            <input className={inputCls} required value={header.iecCode}
-              onChange={(e) => setH("iecCode", e.target.value)} />
+            <input className={inputCls} {...register("iecCode")} />
+            {errors.iecCode && (
+              <p className="mt-1 text-xs text-red-600">{errors.iecCode.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>PAN No *</label>
-            <input className={inputCls} required value={header.panNo}
-              onChange={(e) => setH("panNo", e.target.value)} />
+            <input className={inputCls} {...register("panNo")} />
+            {errors.panNo && (
+              <p className="mt-1 text-xs text-red-600">{errors.panNo.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>GSTIN No *</label>
-            <input className={inputCls} required value={header.gstinNo}
-              onChange={(e) => setH("gstinNo", e.target.value)} />
+            <input className={inputCls} {...register("gstinNo")} />
+            {errors.gstinNo && (
+              <p className="mt-1 text-xs text-red-600">{errors.gstinNo.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>End Use Code</label>
-            <input className={inputCls} value={header.endUseCode}
-              onChange={(e) => setH("endUseCode", e.target.value)}
-              placeholder="FSH190, GNX100" />
+            <input className={inputCls} {...register("endUseCode")} placeholder="FSH190, GNX100" />
+            {errors.endUseCode && (
+              <p className="mt-1 text-xs text-red-600">{errors.endUseCode.message}</p>
+            )}
           </div>
         </div>
       </section>
@@ -374,23 +440,27 @@ export default function InvoiceForm({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Consignee *</label>
-            <select className={inputCls} required value={header.consigneeId}
-              onChange={(e) => setH("consigneeId", e.target.value)}>
+            <select className={inputCls} {...register("consigneeId")}>
               <option value="">— Select consignee —</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>{c.name} ({c.country})</option>
               ))}
             </select>
+            {errors.consigneeId && (
+              <p className="mt-1 text-xs text-red-600">{errors.consigneeId.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Buyer (if different from consignee)</label>
-            <select className={inputCls} value={header.buyerId}
-              onChange={(e) => setH("buyerId", e.target.value)}>
+            <select className={inputCls} {...register("buyerId")}>
               <option value="">— Same as consignee —</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>{c.name} ({c.country})</option>
               ))}
             </select>
+            {errors.buyerId && (
+              <p className="mt-1 text-xs text-red-600">{errors.buyerId.message}</p>
+            )}
           </div>
         </div>
       </section>
@@ -403,62 +473,83 @@ export default function InvoiceForm({
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
             <label className={labelCls}>Pre-Carriage *</label>
-            <input className={inputCls} required value={header.preCarriage}
-              onChange={(e) => setH("preCarriage", e.target.value)} placeholder="BY SEA" />
+            <input className={inputCls} {...register("preCarriage")} placeholder="BY SEA" />
+            {errors.preCarriage && (
+              <p className="mt-1 text-xs text-red-600">{errors.preCarriage.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Port of Receipt *</label>
-            <input className={inputCls} required value={header.portOfReceipt}
-              onChange={(e) => setH("portOfReceipt", e.target.value)} placeholder="JNPT" />
+            <input className={inputCls} {...register("portOfReceipt")} placeholder="JNPT" />
+            {errors.portOfReceipt && (
+              <p className="mt-1 text-xs text-red-600">{errors.portOfReceipt.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Vessel / Flight No</label>
-            <input className={inputCls} value={header.vesselFlight}
-              onChange={(e) => setH("vesselFlight", e.target.value)} />
+            <input className={inputCls} {...register("vesselFlight")} />
+            {errors.vesselFlight && (
+              <p className="mt-1 text-xs text-red-600">{errors.vesselFlight.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Port of Loading *</label>
-            <input className={inputCls} required value={header.portOfLoading}
-              onChange={(e) => setH("portOfLoading", e.target.value)} placeholder="JNPT" />
+            <input className={inputCls} {...register("portOfLoading")} placeholder="JNPT" />
+            {errors.portOfLoading && (
+              <p className="mt-1 text-xs text-red-600">{errors.portOfLoading.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Port of Discharge *</label>
-            <input className={inputCls} required value={header.portOfDischarge}
-              onChange={(e) => setH("portOfDischarge", e.target.value)} placeholder="VANCOUVER" />
+            <input className={inputCls} {...register("portOfDischarge")} placeholder="VANCOUVER" />
+            {errors.portOfDischarge && (
+              <p className="mt-1 text-xs text-red-600">{errors.portOfDischarge.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Final Destination *</label>
-            <input className={inputCls} required value={header.finalDestination}
-              onChange={(e) => setH("finalDestination", e.target.value)} placeholder="VANCOUVER" />
+            <input className={inputCls} {...register("finalDestination")} placeholder="VANCOUVER" />
+            {errors.finalDestination && (
+              <p className="mt-1 text-xs text-red-600">{errors.finalDestination.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Country of Origin</label>
-            <input className={inputCls} value={header.countryOfOrigin}
-              onChange={(e) => setH("countryOfOrigin", e.target.value)} />
+            <input className={inputCls} {...register("countryOfOrigin")} />
+            {errors.countryOfOrigin && (
+              <p className="mt-1 text-xs text-red-600">{errors.countryOfOrigin.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Country of Destination</label>
-            <input className={inputCls} value={header.countryOfDestination}
-              onChange={(e) => setH("countryOfDestination", e.target.value)} />
+            <input className={inputCls} {...register("countryOfDestination")} />
+            {errors.countryOfDestination && (
+              <p className="mt-1 text-xs text-red-600">{errors.countryOfDestination.message}</p>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-2">
           <div className="sm:col-span-2">
             <label className={labelCls}>Terms of Delivery *</label>
-            <input className={inputCls} required value={header.termsOfDelivery}
-              onChange={(e) => setH("termsOfDelivery", e.target.value)}
-              placeholder="C & I CAD $ BY SEA" />
+            <input className={inputCls} {...register("termsOfDelivery")} placeholder="C & I CAD $ BY SEA" />
+            {errors.termsOfDelivery && (
+              <p className="mt-1 text-xs text-red-600">{errors.termsOfDelivery.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Exchange Rate (INR / CAD) *</label>
-            <input type="number" step="0.01" className={inputCls} required value={header.exchangeRate}
-              onChange={(e) => setH("exchangeRate", e.target.value)} placeholder="64.45" />
+            <input type="number" step="0.01" className={inputCls} {...register("exchangeRate")} placeholder="64.45" />
+            {errors.exchangeRate && (
+              <p className="mt-1 text-xs text-red-600">{errors.exchangeRate.message}</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Insurance (CAD)</label>
-            <input type="number" step="0.001" className={inputCls} value={header.insuranceCAD}
-              onChange={(e) => setH("insuranceCAD", e.target.value)} placeholder="8.249" />
+            <input type="number" step="0.001" className={inputCls} {...register("insuranceCAD")} placeholder="8.249" />
+            {errors.insuranceCAD && (
+              <p className="mt-1 text-xs text-red-600">{errors.insuranceCAD.message}</p>
+            )}
           </div>
         </div>
       </section>
@@ -469,21 +560,22 @@ export default function InvoiceForm({
           <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
             Line Items
           </h2>
-          <button type="button" onClick={addItem}
+          <button type="button" onClick={() => append(blankItem())}
             className="rounded-md bg-blue-50 border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100">
             + Add Item
           </button>
         </div>
 
         <div className="space-y-6">
-          {items.map((item, idx) => {
+          {fields.map((field, idx) => {
+            const item = itemsWatch?.[idx];
             const calc = calcItem(item);
             return (
-              <div key={idx} className="rounded-lg border border-gray-200 p-4 space-y-4">
+              <div key={field.id} className="rounded-lg border border-gray-200 p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-gray-700">Item [{idx + 1}]</span>
-                  {items.length > 1 && (
-                    <button type="button" onClick={() => removeItem(idx)}
+                  {fields.length > 1 && (
+                    <button type="button" onClick={() => remove(idx)}
                       className="text-xs text-red-600 hover:underline">
                       Remove
                     </button>
@@ -493,8 +585,12 @@ export default function InvoiceForm({
                 {/* Product picker */}
                 <div>
                   <label className={labelCls}>Select from Product Catalogue (auto-fills fields)</label>
-                  <select className={inputCls} value={item.productId}
-                    onChange={(e) => selectProduct(idx, e.target.value)}>
+                  <select
+                    className={inputCls}
+                    {...register(`items.${idx}.productId`, {
+                      onChange: (e) => selectProduct(idx, e.target.value),
+                    })}
+                  >
                     <option value="">— Manual entry —</option>
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>{p.description}</option>
@@ -505,27 +601,55 @@ export default function InvoiceForm({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <label className={labelCls}>Description *</label>
-                    <input className={inputCls} required value={item.description}
-                      onChange={(e) => setItem(idx, "description", e.target.value)}
-                      placeholder="e.g. ROASTED CHANA W/H SKIN IN POUCH" />
+                    <input
+                      className={inputCls}
+                      {...register(`items.${idx}.description`)}
+                      placeholder="e.g. ROASTED CHANA W/H SKIN IN POUCH"
+                    />
+                    {errors.items?.[idx]?.description && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].description.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>HS Code *</label>
-                    <input className={inputCls} required value={item.hsCode}
-                      onChange={(e) => setItem(idx, "hsCode", e.target.value)}
-                      placeholder="21069099" />
+                    <input
+                      className={inputCls}
+                      {...register(`items.${idx}.hsCode`)}
+                      placeholder="21069099"
+                    />
+                    {errors.items?.[idx]?.hsCode && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].hsCode.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Package Description *</label>
-                    <input className={inputCls} required value={item.packageDescription}
-                      onChange={(e) => setItem(idx, "packageDescription", e.target.value)}
-                      placeholder="20 X 400 GM" />
+                    <input
+                      className={inputCls}
+                      {...register(`items.${idx}.packageDescription`)}
+                      placeholder="20 X 400 GM"
+                    />
+                    {errors.items?.[idx]?.packageDescription && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].packageDescription.message}
+                      </p>
+                    )}
                   </div>
                   <div className="sm:col-span-2">
                     <label className={labelCls}>Marks & Nos</label>
-                    <input className={inputCls} value={item.marksAndNos}
-                      onChange={(e) => setItem(idx, "marksAndNos", e.target.value)}
-                      placeholder="KFBPL/VANCOUVER CTNS NO." />
+                    <input
+                      className={inputCls}
+                      {...register(`items.${idx}.marksAndNos`)}
+                      placeholder="KFBPL/VANCOUVER CTNS NO."
+                    />
+                    {errors.items?.[idx]?.marksAndNos && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].marksAndNos.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -533,28 +657,72 @@ export default function InvoiceForm({
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                   <div>
                     <label className={labelCls}>Qty (pkgs) *</label>
-                    <input type="number" min="1" className={inputCls} required value={item.quantity}
-                      onChange={(e) => setItem(idx, "quantity", e.target.value)} />
+                    <input
+                      type="number"
+                      className={inputCls}
+                      {...register(`items.${idx}.quantity`)}
+                    />
+                    {errors.items?.[idx]?.quantity && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].quantity.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Rate (FOB CAD/pkg) *</label>
-                    <input type="number" step="0.01" className={inputCls} required value={item.rate}
-                      onChange={(e) => setItem(idx, "rate", e.target.value)} />
+                    <input
+                      type="number"
+                      step="0.01"
+                      className={inputCls}
+                      {...register(`items.${idx}.rate`)}
+                    />
+                    {errors.items?.[idx]?.rate && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].rate.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Net Wt/pkg (kg) *</label>
-                    <input type="number" step="0.001" className={inputCls} required value={item.netWeight}
-                      onChange={(e) => setItem(idx, "netWeight", e.target.value)} />
+                    <input
+                      type="number"
+                      step="0.001"
+                      className={inputCls}
+                      {...register(`items.${idx}.netWeight`)}
+                    />
+                    {errors.items?.[idx]?.netWeight && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].netWeight.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Gross Wt/pkg (kg) *</label>
-                    <input type="number" step="0.001" className={inputCls} required value={item.grossWeight}
-                      onChange={(e) => setItem(idx, "grossWeight", e.target.value)} />
+                    <input
+                      type="number"
+                      step="0.001"
+                      className={inputCls}
+                      {...register(`items.${idx}.grossWeight`)}
+                    />
+                    {errors.items?.[idx]?.grossWeight && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].grossWeight.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>IGST Rate</label>
-                    <input type="number" step="0.01" min="0" max="1" className={inputCls} value={item.igstRate}
-                      onChange={(e) => setItem(idx, "igstRate", e.target.value)} />
+                    <input
+                      type="number"
+                      step="0.01"
+                      className={inputCls}
+                      {...register(`items.${idx}.igstRate`)}
+                    />
+                    {errors.items?.[idx]?.igstRate && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.items[idx].igstRate.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -628,9 +796,9 @@ export default function InvoiceForm({
 
       {/* ── Submit ── */}
       <div className="flex gap-3">
-        <button type="submit" disabled={loading}
+        <button type="submit" disabled={isSubmitting}
           className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-          {loading ? "Saving…" : isEditing ? "Save Changes" : "Create Invoice"}
+          {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Invoice"}
         </button>
         <button type="button" onClick={() => router.back()}
           className="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">

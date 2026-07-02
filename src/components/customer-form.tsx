@@ -4,6 +4,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const customerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  address: z.string().min(1, "Address is required"),
+  country: z.string().min(1, "Country is required"),
+  contactPerson: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email("Enter a valid email").or(z.literal("")).optional(),
+});
+
+type CustomerValues = z.infer<typeof customerSchema>;
 
 interface CustomerFormProps {
   /** When editing, pass the existing customer data */
@@ -22,27 +36,25 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
   const router = useRouter();
   const isEditing = !!defaultValues;
 
-  const [form, setForm] = useState({
-    name: defaultValues?.name ?? "",
-    address: defaultValues?.address ?? "",
-    country: defaultValues?.country ?? "",
-    contactPerson: defaultValues?.contactPerson ?? "",
-    phone: defaultValues?.phone ?? "",
-    email: defaultValues?.email ?? "",
-  });
-
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CustomerValues>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: defaultValues?.name ?? "",
+      address: defaultValues?.address ?? "",
+      country: defaultValues?.country ?? "",
+      contactPerson: defaultValues?.contactPerson ?? "",
+      phone: defaultValues?.phone ?? "",
+      email: defaultValues?.email ?? "",
+    },
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
+  async function onSubmit(data: CustomerValues) {
     setError("");
 
     const url = isEditing
@@ -53,13 +65,12 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(data),
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Something went wrong");
-      setLoading(false);
+      const json = await res.json();
+      setError(json.error ?? "Something went wrong");
       return;
     }
 
@@ -68,7 +79,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-lg">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5 max-w-lg">
       {error && (
         <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 border border-red-200">
           {error}
@@ -81,13 +92,15 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           Name <span className="text-red-500">*</span>
         </label>
         <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          required
+          {...register("name")}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="e.g. ABC Imports Ltd."
         />
+        {errors.name && (
+          <p className="mt-1 text-xs text-red-600">
+            {errors.name.message}
+          </p>
+        )}
       </div>
 
       {/* Address */}
@@ -96,14 +109,16 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           Address <span className="text-red-500">*</span>
         </label>
         <textarea
-          name="address"
-          value={form.address}
-          onChange={handleChange}
-          required
+          {...register("address")}
           rows={3}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Full address"
         />
+        {errors.address && (
+          <p className="mt-1 text-xs text-red-600">
+            {errors.address.message}
+          </p>
+        )}
       </div>
 
       {/* Country */}
@@ -112,13 +127,15 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           Country <span className="text-red-500">*</span>
         </label>
         <input
-          name="country"
-          value={form.country}
-          onChange={handleChange}
-          required
+          {...register("country")}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="e.g. CANADA"
         />
+        {errors.country && (
+          <p className="mt-1 text-xs text-red-600">
+            {errors.country.message}
+          </p>
+        )}
       </div>
 
       {/* Contact Person */}
@@ -127,12 +144,15 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           Contact Person
         </label>
         <input
-          name="contactPerson"
-          value={form.contactPerson}
-          onChange={handleChange}
+          {...register("contactPerson")}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Optional"
         />
+        {errors.contactPerson && (
+          <p className="mt-1 text-xs text-red-600">
+            {errors.contactPerson.message}
+          </p>
+        )}
       </div>
 
       {/* Phone */}
@@ -141,12 +161,15 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           Phone
         </label>
         <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
+          {...register("phone")}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Optional"
         />
+        {errors.phone && (
+          <p className="mt-1 text-xs text-red-600">
+            {errors.phone.message}
+          </p>
+        )}
       </div>
 
       {/* Email */}
@@ -155,23 +178,26 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           Email
         </label>
         <input
-          name="email"
           type="email"
-          value={form.email}
-          onChange={handleChange}
+          {...register("email")}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Optional"
         />
+        {errors.email && (
+          <p className="mt-1 text-xs text-red-600">
+            {errors.email.message}
+          </p>
+        )}
       </div>
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          disabled={loading}
+          disabled={isSubmitting}
           className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Saving…" : isEditing ? "Save Changes" : "Create Customer"}
+          {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Customer"}
         </button>
         <button
           type="button"

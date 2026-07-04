@@ -38,7 +38,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${ibmSans.variable} ${ibmMono.variable} ${sourceSerif.variable} antialiased bg-[#F7F5F1] text-[#1C2B33] font-sans transition-colors duration-100`}
+        className={`${ibmSans.variable} ${ibmMono.variable} ${sourceSerif.variable} antialiased bg-[#FCFCFB] text-[#1C335E] font-sans transition-colors duration-100`}
       >
         <Providers session={session}>{children}</Providers>
       </body>

@@ -87,31 +87,33 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
     }, 1000);
   }
 
+  const labelCls = "block text-[10px] font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1.5";
+
   return (
     <>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+        className="inline-flex items-center justify-center rounded-none border border-[#1C335E] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C335E] hover:bg-[#1C335E]/5 transition-all cursor-pointer"
       >
         Edit
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1C335E]/20 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-none border border-[#D8D6D3] bg-[#F7F5F2] p-6 shadow-none">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#1C335E] mb-4 text-left">
               Edit User
             </h2>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4 text-left">
               {serverError && (
-                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                <div className="rounded-none bg-[#EF4444]/10 px-4 py-2.5 text-xs text-[#EF4444] border border-[#EF4444]/20 font-mono">
                   {serverError}
                 </div>
               )}
               {success && (
-                <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 border border-green-200">
+                <div className="rounded-none bg-[#22C55E]/10 px-4 py-2.5 text-xs text-[#22C55E] border border-[#22C55E]/20 font-mono">
                   {success}
                 </div>
               )}
@@ -120,7 +122,7 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
               <div>
                 <label
                   htmlFor="edit-name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={labelCls}
                 >
                   Name
                 </label>
@@ -129,10 +131,10 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
                   type="text"
                   autoComplete="off"
                   {...register("name")}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-950 bg-white"
+                  className="w-full font-mono text-xs"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-xs text-red-600">
+                  <p className="mt-1 text-xs text-[#EF4444] font-mono">
                     {errors.name.message}
                   </p>
                 )}
@@ -142,7 +144,7 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
               <div>
                 <label
                   htmlFor="edit-email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={labelCls}
                 >
                   Email
                 </label>
@@ -151,10 +153,10 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
                   type="email"
                   autoComplete="off"
                   {...register("email")}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-950 bg-white"
+                  className="w-full font-mono text-xs"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-xs text-red-600">
+                  <p className="mt-1 text-xs text-[#EF4444] font-mono">
                     {errors.email.message}
                   </p>
                 )}
@@ -164,7 +166,7 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
               <div>
                 <label
                   htmlFor="edit-password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={labelCls}
                 >
                   Password
                 </label>
@@ -173,14 +175,14 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
                   type="password"
                   autoComplete="new-password"
                   {...register("password")}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-950 bg-white"
+                  className="w-full font-mono text-xs"
                   placeholder="Leave blank to keep current password."
                 />
-                <span className="text-[11px] text-gray-400 block mt-1">
+                <span className="text-[10px] text-[#9CA3AF] block mt-1">
                   Leave blank to keep current password.
                 </span>
                 {errors.password && (
-                  <p className="mt-1 text-xs text-red-600">
+                  <p className="mt-1 text-xs text-[#EF4444] font-mono">
                     {errors.password.message}
                   </p>
                 )}
@@ -190,42 +192,42 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
               <div>
                 <label
                   htmlFor="edit-role"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={labelCls}
                 >
                   Role
                 </label>
                 <select
                   id="edit-role"
                   {...register("role")}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-950 bg-white"
+                  className="w-full"
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                 </select>
                 {errors.role && (
-                  <p className="mt-1 text-xs text-red-600">
+                  <p className="mt-1 text-xs text-[#EF4444] font-mono">
                     {errors.role.message}
                   </p>
                 )}
                 {user.id === currentUserId && selectedRole !== "admin" && (
-                  <p className="text-xs text-amber-700 font-medium bg-amber-50 p-2.5 rounded-lg border border-amber-200 mt-2">
+                  <p className="rounded-none bg-[#F59E0B]/10 px-4 py-2.5 text-xs text-[#F59E0B] border border-[#F59E0B]/20 font-mono mt-2 uppercase tracking-wider font-semibold">
                     Warning: Demoting yourself will remove your admin permissions immediately.
                   </p>
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#D8D6D3]">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-none border border-[#D8D6D3] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#6F7B8E] hover:bg-black/5 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? "Saving…" : "Save changes"}
                 </button>

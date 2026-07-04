@@ -59,22 +59,22 @@ export default function CreateUserForm() {
     router.refresh();
   }
 
-  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+  const labelCls = "block text-[10px] font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1.5";
 
   return (
-    <div className="border border-[#D8D3C8] dark:border-[#33312D] p-6 bg-transparent rounded-none">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] mb-4">
+    <div className="border border-[#D8D6D3] p-6 bg-transparent rounded-none">
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-[#1C335E] mb-4">
         Record New User Account
       </h2>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         {serverError && (
-          <div className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
+          <div className="rounded-none bg-[#EF4444]/10 px-4 py-2.5 text-xs text-[#EF4444] border border-[#EF4444]/20 font-mono">
             {serverError}
           </div>
         )}
         {success && (
-          <div className="rounded-none bg-[#2E5E4E]/10 dark:bg-[#49826D]/10 px-4 py-2.5 text-xs text-[#2E5E4E] dark:text-[#49826D] border border-[#2E5E4E]/20 dark:border-[#49826D]/20 font-mono">
+          <div className="rounded-none bg-[#22C55E]/10 px-4 py-2.5 text-xs text-[#22C55E] border border-[#22C55E]/20 font-mono">
             {success}
           </div>
         )}
@@ -97,7 +97,7 @@ export default function CreateUserForm() {
               placeholder="user@example.com"
             />
             {errors.email && (
-              <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
+              <p className="mt-1.5 text-xs text-[#EF4444] font-semibold font-mono">
                 {errors.email.message}
               </p>
             )}
@@ -120,7 +120,7 @@ export default function CreateUserForm() {
               placeholder="Min. 8 characters"
             />
             {errors.password && (
-              <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
+              <p className="mt-1.5 text-xs text-[#EF4444] font-semibold font-mono">
                 {errors.password.message}
               </p>
             )}
@@ -143,18 +143,18 @@ export default function CreateUserForm() {
               <option value="admin">Admin</option>
             </select>
             {errors.role && (
-              <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
+              <p className="mt-1.5 text-xs text-[#EF4444] font-semibold font-mono">
                 {errors.role.message}
               </p>
             )}
           </div>
         </div>
 
-        <div className="pt-2 border-t border-[#D8D3C8] dark:border-[#33312D]">
+        <div className="pt-2 border-t border-[#D8D6D3]">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all disabled:opacity-50"
           >
             {isSubmitting ? "Registering…" : "Register Account"}
           </button>

@@ -16,7 +16,7 @@ export default async function EditCustomerPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Edit Customer</h1>
+      <h1 className="text-2xl font-bold text-[#1C335E]">Edit Customer</h1>
       <CustomerForm defaultValues={customer} />
     </div>
   );

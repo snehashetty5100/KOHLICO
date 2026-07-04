@@ -12,9 +12,9 @@ export default async function NewInvoicePage() {
 
   return (
     <div className="space-y-8">
-      <div className="border-b border-[#D8D3C8] dark:border-[#33312D] pb-6">
-        <h1 className="text-3xl font-serif font-bold text-[#1C2B33] dark:text-[#F7F5F1]">New Entry</h1>
-        <p className="mt-1.5 text-xs text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-mono">
+      <div className="border-b border-[#D8D6D3] pb-6">
+        <h1 className="text-3xl font-serif font-bold text-[#1C335E]">New Entry</h1>
+        <p className="mt-1.5 text-xs text-[#6F7B8E] uppercase tracking-wider font-mono">
           Draft a shipping invoice
         </p>
       </div>

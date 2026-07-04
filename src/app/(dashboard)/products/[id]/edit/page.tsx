@@ -16,7 +16,7 @@ export default async function EditProductPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
+      <h1 className="text-2xl font-bold text-[#1C335E]">Edit Product</h1>
       <ProductForm defaultValues={product} />
     </div>
   );

@@ -24,7 +24,7 @@ export default function FinalizeButton({ id }: { id: string }) {
     <button
       onClick={handleFinalize}
       disabled={loading}
-      className="rounded-none bg-[#2E5E4E] hover:opacity-85 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white border border-[#2E5E4E] transition-all disabled:opacity-50"
+      className="rounded-none bg-[#E28924] hover:bg-[#C26F16] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white border border-[#E28924] transition-all disabled:opacity-50"
     >
       {loading ? "Finalizing…" : "Mark as Final"}
     </button>

@@ -42,8 +42,8 @@ export default function NavBar({ user }: NavBarProps) {
           onClick={onClick}
           className={`block py-2 text-xs tracking-wider uppercase font-semibold transition-all duration-100 ${
             active
-              ? "text-[#2E5E4E] dark:text-[#49826D]"
-              : "text-[#7A756B] hover:text-[#1C2B33] dark:hover:text-[#F7F5F1]"
+              ? "text-[#E28924]"
+              : "text-white/70 hover:text-white"
           }`}
         >
           {active ? `[ ${link.label} ]` : `  ${link.label}`}
@@ -55,13 +55,13 @@ export default function NavBar({ user }: NavBarProps) {
   return (
     <>
       {/* Mobile Top Header (hidden on large screens) */}
-      <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#F7F5F1] dark:bg-[#1C2B33] border-b border-[#D8D3C8] dark:border-[#33312D] w-full">
-        <Link href="/dashboard" className="text-lg font-serif font-bold text-[#1C2B33] dark:text-[#F7F5F1] tracking-tight">
+      <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#FCFCFB] border-b border-[#D8D6D3] w-full">
+        <Link href="/dashboard" className="text-lg font-serif font-bold text-[#1C335E] tracking-tight">
           KOHLICO
         </Link>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-1.5 text-[#1C2B33] dark:text-[#F7F5F1] border border-[#D8D3C8] dark:border-[#33312D] hover:bg-black/5"
+          className="p-1.5 text-[#1C335E] border border-[#D8D6D3] hover:bg-[#1C335E]/5"
         >
           {isOpen ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,13 +79,13 @@ export default function NavBar({ user }: NavBarProps) {
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
-          className="lg:hidden fixed inset-0 z-40 bg-black/10 transition-opacity duration-100"
+          className="lg:hidden fixed inset-0 z-40 bg-[#1C335E]/10 transition-opacity duration-100"
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col justify-between w-60 bg-[#F7F5F1] dark:bg-[#1C2B33] border-r border-[#D8D3C8] dark:border-[#33312D] p-8 transition-transform duration-100 transform lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col justify-between w-60 bg-[#1C335E] border-r border-[#16294C] p-8 transition-transform duration-100 transform lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
@@ -94,7 +94,7 @@ export default function NavBar({ user }: NavBarProps) {
           <div className="hidden lg:block">
             <Link
               href="/dashboard"
-              className="text-2xl font-serif font-bold text-[#1C2B33] dark:text-[#F7F5F1] tracking-tight hover:opacity-90"
+              className="text-2xl font-serif font-bold text-white tracking-tight hover:opacity-90"
             >
               KOHLICO
             </Link>
@@ -105,20 +105,20 @@ export default function NavBar({ user }: NavBarProps) {
         </div>
 
         {/* Footer / User menu */}
-        <div className="pt-6 border-t border-[#D8D3C8] dark:border-[#33312D] space-y-4">
+        <div className="pt-6 border-t border-white/15 space-y-4">
           <div className="flex flex-col gap-1 px-1 font-mono text-xs">
-            <div className="flex items-center justify-between text-[#1C2B33] dark:text-[#F7F5F1] truncate">
+            <div className="flex items-center justify-between text-white truncate">
               <span className="font-semibold truncate">{user.name ?? user.email}</span>
               {user.role === "admin" && (
-                <span className="text-[10px] text-[#2E5E4E] dark:text-[#49826D] font-bold">[ADMIN]</span>
+                <span className="text-[10px] text-[#E28924] font-bold">[ADMIN]</span>
               )}
             </div>
-            <span className="text-[10px] text-[#7A756B] truncate">{user.email}</span>
+            <span className="text-[10px] text-white/50 truncate">{user.email}</span>
           </div>
 
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex items-center justify-center w-full gap-2 py-2 text-xs font-semibold text-[#1C2B33] dark:text-[#F7F5F1] border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-all rounded-none uppercase tracking-wider"
+            className="flex items-center justify-center w-full gap-2 py-2 text-xs font-semibold text-white border border-white/30 bg-transparent hover:bg-white/10 transition-all rounded-none uppercase tracking-wider"
           >
             <span>Sign out</span>
           </button>

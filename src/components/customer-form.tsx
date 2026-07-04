@@ -78,12 +78,12 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
     router.refresh();
   }
 
-  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+  const labelCls = "block text-[10px] font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1.5";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6 max-w-lg bg-transparent border-0 p-0 shadow-none">
       {error && (
-        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
+        <p className="rounded-none bg-[#EF4444]/10 px-4 py-2.5 text-xs text-[#EF4444] border border-[#EF4444]/20 font-mono">
           {error}
         </p>
       )}
@@ -91,7 +91,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
       {/* Name */}
       <div>
         <label className={labelCls}>
-          Name <span className="text-[#C1443C]">*</span>
+          Name <span className="text-[#EF4444]">*</span>
         </label>
         <input
           {...register("name")}
@@ -99,7 +99,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           placeholder="e.g. ABC Imports Ltd."
         />
         {errors.name && (
-          <p className="mt-1 text-xs text-red-600">
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.name.message}
           </p>
         )}
@@ -108,7 +108,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
       {/* Address */}
       <div>
         <label className={labelCls}>
-          Address <span className="text-[#C1443C]">*</span>
+          Address <span className="text-[#EF4444]">*</span>
         </label>
         <textarea
           {...register("address")}
@@ -117,7 +117,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           placeholder="Full address"
         />
         {errors.address && (
-          <p className="mt-1 text-xs text-red-600">
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.address.message}
           </p>
         )}
@@ -126,7 +126,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
       {/* Country */}
       <div>
         <label className={labelCls}>
-          Country <span className="text-[#C1443C]">*</span>
+          Country <span className="text-[#EF4444]">*</span>
         </label>
         <input
           {...register("country")}
@@ -134,7 +134,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           placeholder="e.g. CANADA"
         />
         {errors.country && (
-          <p className="mt-1 text-xs text-red-600">
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.country.message}
           </p>
         )}
@@ -151,7 +151,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           placeholder="Optional"
         />
         {errors.contactPerson && (
-          <p className="mt-1 text-xs text-red-600">
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.contactPerson.message}
           </p>
         )}
@@ -168,7 +168,7 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           placeholder="Optional"
         />
         {errors.phone && (
-          <p className="mt-1 text-xs text-red-600">
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.phone.message}
           </p>
         )}
@@ -186,25 +186,25 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           placeholder="Optional"
         />
         {errors.email && (
-          <p className="mt-1 text-xs text-red-600">
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.email.message}
           </p>
         )}
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D6D3]">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all disabled:opacity-50"
         >
           {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Customer"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+          className="inline-flex items-center justify-center rounded-none border border-[#D8D6D3] bg-transparent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#6F7B8E] hover:bg-black/5 transition-all"
         >
           Cancel
         </button>

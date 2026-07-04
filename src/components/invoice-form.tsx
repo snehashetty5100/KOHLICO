@@ -347,19 +347,19 @@ export default function InvoiceForm({
   // ── Render ──────────────────────────────────────────────────────────────────
 
   const inputCls = "w-full disabled:opacity-50";
-  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+  const labelCls = "block text-[10px] font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1.5";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8 font-sans">
       {error && (
-        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
+        <p className="rounded-none bg-[#EF4444]/10 px-4 py-2.5 text-xs text-[#EF4444] border border-[#EF4444]/20 font-mono">
           {error}
         </p>
       )}
 
       {/* ── Section 1: Invoice Identity ── */}
-      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
-        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
+      <section className="border border-[#D8D6D3] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#6F7B8E] uppercase tracking-wider border-b border-[#D8D6D3] pb-3 font-serif">
           Invoice Details
         </h2>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
@@ -367,36 +367,36 @@ export default function InvoiceForm({
             <label className={labelCls}>Invoice No *</label>
             <input className={inputCls} {...register("invoiceNo")} placeholder="KF/1902/25-26" />
             {errors.invoiceNo && (
-              <p className="mt-1 text-xs text-red-600">{errors.invoiceNo.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.invoiceNo.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Invoice Date *</label>
             <input type="date" className={inputCls} {...register("invoiceDate")} />
             {errors.invoiceDate && (
-              <p className="mt-1 text-xs text-red-600">{errors.invoiceDate.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.invoiceDate.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Proforma Invoice No</label>
             <input className={inputCls} {...register("proformaInvNo")} />
             {errors.proformaInvNo && (
-              <p className="mt-1 text-xs text-red-600">{errors.proformaInvNo.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.proformaInvNo.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Proforma Date</label>
             <input type="date" className={inputCls} {...register("proformaDate")} />
             {errors.proformaDate && (
-              <p className="mt-1 text-xs text-red-600">{errors.proformaDate.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.proformaDate.message}</p>
             )}
           </div>
         </div>
       </section>
 
       {/* ── Section 2: Exporter Details ── */}
-      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
-        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
+      <section className="border border-[#D8D6D3] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#6F7B8E] uppercase tracking-wider border-b border-[#D8D6D3] pb-3 font-serif">
           Exporter Details
         </h2>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
@@ -404,36 +404,36 @@ export default function InvoiceForm({
             <label className={labelCls}>IEC Code *</label>
             <input className={inputCls} {...register("iecCode")} />
             {errors.iecCode && (
-              <p className="mt-1 text-xs text-red-600">{errors.iecCode.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.iecCode.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>PAN No *</label>
             <input className={inputCls} {...register("panNo")} />
             {errors.panNo && (
-              <p className="mt-1 text-xs text-red-600">{errors.panNo.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.panNo.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>GSTIN No *</label>
             <input className={inputCls} {...register("gstinNo")} />
             {errors.gstinNo && (
-              <p className="mt-1 text-xs text-red-600">{errors.gstinNo.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.gstinNo.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>End Use Code</label>
             <input className={inputCls} {...register("endUseCode")} placeholder="FSH190, GNX100" />
             {errors.endUseCode && (
-              <p className="mt-1 text-xs text-red-600">{errors.endUseCode.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.endUseCode.message}</p>
             )}
           </div>
         </div>
       </section>
 
       {/* ── Section 3: Parties ── */}
-      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
-        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
+      <section className="border border-[#D8D6D3] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#6F7B8E] uppercase tracking-wider border-b border-[#D8D6D3] pb-3 font-serif">
           Parties
         </h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -446,7 +446,7 @@ export default function InvoiceForm({
               ))}
             </select>
             {errors.consigneeId && (
-              <p className="mt-1 text-xs text-red-600">{errors.consigneeId.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.consigneeId.message}</p>
             )}
           </div>
           <div>
@@ -458,15 +458,15 @@ export default function InvoiceForm({
               ))}
             </select>
             {errors.buyerId && (
-              <p className="mt-1 text-xs text-red-600">{errors.buyerId.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.buyerId.message}</p>
             )}
           </div>
         </div>
       </section>
 
       {/* ── Section 4: Shipping ── */}
-      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
-        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
+      <section className="border border-[#D8D6D3] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#6F7B8E] uppercase tracking-wider border-b border-[#D8D6D3] pb-3 font-serif">
           Shipping Details
         </h2>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
@@ -474,93 +474,93 @@ export default function InvoiceForm({
             <label className={labelCls}>Pre-Carriage *</label>
             <input className={inputCls} {...register("preCarriage")} placeholder="BY SEA" />
             {errors.preCarriage && (
-              <p className="mt-1 text-xs text-red-600">{errors.preCarriage.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.preCarriage.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Port of Receipt *</label>
             <input className={inputCls} {...register("portOfReceipt")} placeholder="JNPT" />
             {errors.portOfReceipt && (
-              <p className="mt-1 text-xs text-red-600">{errors.portOfReceipt.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.portOfReceipt.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Vessel / Flight No</label>
             <input className={inputCls} {...register("vesselFlight")} />
             {errors.vesselFlight && (
-              <p className="mt-1 text-xs text-red-600">{errors.vesselFlight.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.vesselFlight.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Port of Loading *</label>
             <input className={inputCls} {...register("portOfLoading")} placeholder="JNPT" />
             {errors.portOfLoading && (
-              <p className="mt-1 text-xs text-red-600">{errors.portOfLoading.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.portOfLoading.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Port of Discharge *</label>
             <input className={inputCls} {...register("portOfDischarge")} placeholder="VANCOUVER" />
             {errors.portOfDischarge && (
-              <p className="mt-1 text-xs text-red-600">{errors.portOfDischarge.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.portOfDischarge.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Final Destination *</label>
             <input className={inputCls} {...register("finalDestination")} placeholder="VANCOUVER" />
             {errors.finalDestination && (
-              <p className="mt-1 text-xs text-red-600">{errors.finalDestination.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.finalDestination.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Country of Origin</label>
             <input className={inputCls} {...register("countryOfOrigin")} />
             {errors.countryOfOrigin && (
-              <p className="mt-1 text-xs text-red-600">{errors.countryOfOrigin.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.countryOfOrigin.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Country of Destination</label>
             <input className={inputCls} {...register("countryOfDestination")} />
             {errors.countryOfDestination && (
-              <p className="mt-1 text-xs text-red-600">{errors.countryOfDestination.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.countryOfDestination.message}</p>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-4 border-t border-[#D8D6D3]">
           <div className="sm:col-span-2">
             <label className={labelCls}>Terms of Delivery *</label>
             <input className={inputCls} {...register("termsOfDelivery")} placeholder="C & I CAD $ BY SEA" />
             {errors.termsOfDelivery && (
-              <p className="mt-1 text-xs text-red-600">{errors.termsOfDelivery.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.termsOfDelivery.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Exchange Rate (INR / CAD) *</label>
             <input type="number" step="0.01" className={inputCls} {...register("exchangeRate")} placeholder="64.45" />
             {errors.exchangeRate && (
-              <p className="mt-1 text-xs text-red-600">{errors.exchangeRate.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.exchangeRate.message}</p>
             )}
           </div>
           <div>
             <label className={labelCls}>Insurance (CAD)</label>
             <input type="number" step="0.001" className={inputCls} {...register("insuranceCAD")} placeholder="8.249" />
             {errors.insuranceCAD && (
-              <p className="mt-1 text-xs text-red-600">{errors.insuranceCAD.message}</p>
+              <p className="mt-1 text-xs text-[#EF4444] font-mono">{errors.insuranceCAD.message}</p>
             )}
           </div>
         </div>
       </section>
 
       {/* ── Section 5: Line Items ── */}
-      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
-        <div className="flex items-center justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-3">
-          <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-serif">
+      <section className="border border-[#D8D6D3] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <div className="flex items-center justify-between border-b border-[#D8D6D3] pb-3">
+          <h2 className="text-xs font-bold text-[#6F7B8E] uppercase tracking-wider font-serif">
             Line Items
           </h2>
           <button type="button" onClick={() => append(blankItem())}
-            className="inline-flex items-center justify-center gap-1.5 rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+            className="inline-flex items-center justify-center gap-1.5 rounded-none border border-[#1C335E] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#1C335E] hover:bg-[#1C335E]/5 transition-all">
             + Add Item
           </button>
         </div>
@@ -570,12 +570,12 @@ export default function InvoiceForm({
             const item = itemsWatch?.[idx];
             const calc = calcItem(item);
             return (
-              <div key={idx} className="border border-[#D8D3C8] dark:border-[#33312D] p-6 space-y-5 bg-transparent rounded-none">
-                <div className="flex items-center justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-2">
-                  <span className="text-[10px] font-mono font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider">Item {idx + 1}</span>
+              <div key={idx} className="border border-[#D8D6D3] p-6 space-y-5 bg-transparent rounded-none">
+                <div className="flex items-center justify-between border-b border-[#D8D6D3] pb-2">
+                  <span className="text-[10px] font-mono font-bold text-[#6F7B8E] uppercase tracking-wider">Item {idx + 1}</span>
                   {fields.length > 1 && (
                     <button type="button" onClick={() => remove(idx)}
-                      className="text-xs font-semibold text-[#C1443C] dark:text-[#E8655E] hover:underline uppercase tracking-wider">
+                      className="text-xs font-semibold text-[#EF4444] hover:underline uppercase tracking-wider">
                       Remove Item
                     </button>
                   )}
@@ -606,7 +606,7 @@ export default function InvoiceForm({
                       placeholder="e.g. ROASTED CHANA W/H SKIN IN POUCH"
                     />
                     {errors.items?.[idx]?.description && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].description.message}
                       </p>
                     )}
@@ -619,7 +619,7 @@ export default function InvoiceForm({
                       placeholder="21069099"
                     />
                     {errors.items?.[idx]?.hsCode && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].hsCode.message}
                       </p>
                     )}
@@ -632,7 +632,7 @@ export default function InvoiceForm({
                       placeholder="20 X 400 GM"
                     />
                     {errors.items?.[idx]?.packageDescription && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].packageDescription.message}
                       </p>
                     )}
@@ -645,7 +645,7 @@ export default function InvoiceForm({
                       placeholder="KFBPL/VANCOUVER CTNS NO."
                     />
                     {errors.items?.[idx]?.marksAndNos && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].marksAndNos.message}
                       </p>
                     )}
@@ -653,7 +653,7 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Qty / Rate / Weights */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 border-t border-[#D8D3C8] dark:border-[#33312D] pt-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 border-t border-[#D8D6D3] pt-4">
                   <div>
                     <label className={labelCls}>Qty (pkgs) *</label>
                     <input
@@ -662,7 +662,7 @@ export default function InvoiceForm({
                       {...register(`items.${idx}.quantity`)}
                     />
                     {errors.items?.[idx]?.quantity && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].quantity.message}
                       </p>
                     )}
@@ -676,7 +676,7 @@ export default function InvoiceForm({
                       {...register(`items.${idx}.rate`)}
                     />
                     {errors.items?.[idx]?.rate && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].rate.message}
                       </p>
                     )}
@@ -690,7 +690,7 @@ export default function InvoiceForm({
                       {...register(`items.${idx}.netWeight`)}
                     />
                     {errors.items?.[idx]?.netWeight && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].netWeight.message}
                       </p>
                     )}
@@ -704,7 +704,7 @@ export default function InvoiceForm({
                       {...register(`items.${idx}.grossWeight`)}
                     />
                     {errors.items?.[idx]?.grossWeight && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].grossWeight.message}
                       </p>
                     )}
@@ -718,7 +718,7 @@ export default function InvoiceForm({
                       {...register(`items.${idx}.igstRate`)}
                     />
                     {errors.items?.[idx]?.igstRate && (
-                      <p className="mt-1 text-xs text-red-600">
+                      <p className="mt-1 text-xs text-[#EF4444] font-mono">
                         {errors.items[idx].igstRate.message}
                       </p>
                     )}
@@ -726,26 +726,26 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Calculated row */}
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 border border-[#D8D3C8] dark:border-[#33312D] p-4 text-xs mt-3 font-mono bg-transparent rounded-none">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 border border-[#D8D6D3] p-4 text-xs mt-3 font-mono bg-transparent rounded-none">
                   <div>
-                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">FOB CAD</p>
-                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.fobCAD)}</p>
+                    <p className="font-semibold text-[#6F7B8E] text-[9px] uppercase tracking-wider">FOB CAD</p>
+                    <p className="font-bold text-[#1C335E] text-sm">{n(calc.fobCAD)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Taxable INR</p>
-                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.taxableINR, 2)}</p>
+                    <p className="font-semibold text-[#6F7B8E] text-[9px] uppercase tracking-wider">Taxable INR</p>
+                    <p className="font-bold text-[#1C335E] text-sm">{n(calc.taxableINR, 2)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">IGST (INR)</p>
-                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.igstINR, 2)}</p>
+                    <p className="font-semibold text-[#6F7B8E] text-[9px] uppercase tracking-wider">IGST (INR)</p>
+                    <p className="font-bold text-[#1C335E] text-sm">{n(calc.igstINR, 2)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Net Wt (kg)</p>
-                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.totalNetWt, 3)}</p>
+                    <p className="font-semibold text-[#6F7B8E] text-[9px] uppercase tracking-wider">Net Wt (kg)</p>
+                    <p className="font-bold text-[#1C335E] text-sm">{n(calc.totalNetWt, 3)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Gross Wt (kg)</p>
-                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.totalGrossWt, 3)}</p>
+                    <p className="font-semibold text-[#6F7B8E] text-[9px] uppercase tracking-wider">Gross Wt (kg)</p>
+                    <p className="font-bold text-[#1C335E] text-sm">{n(calc.totalGrossWt, 3)}</p>
                   </div>
                 </div>
               </div>
@@ -754,53 +754,52 @@ export default function InvoiceForm({
         </div>
 
         {/* ── Totals ── */}
-        <div className="border border-[#D8D3C8] dark:border-[#33312D] bg-transparent p-6 mt-8 rounded-none">
-          <h3 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-4 border-b border-[#D8D3C8] dark:border-[#33312D] pb-2 font-serif">Invoice Totals</h3>
+        <div className="border border-[#D8D6D3] bg-transparent p-6 mt-8 rounded-none">
+          <h3 className="text-xs font-bold text-[#6F7B8E] uppercase tracking-wider mb-4 border-b border-[#D8D6D3] pb-2 font-serif">Invoice Totals</h3>
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 text-sm font-mono">
             <div>
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Pkgs</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{totals.pkgs}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total Pkgs</p>
+              <p className="font-bold text-[#1C335E] text-base">{totals.pkgs}</p>
             </div>
             <div>
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total FOB CAD</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.fobCAD)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total FOB CAD</p>
+              <p className="font-bold text-[#1C335E] text-base">{n(totals.fobCAD)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Insurance (CAD)</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(insCAD)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Insurance (CAD)</p>
+              <p className="font-bold text-[#1C335E] text-base">{n(insCAD)}</p>
             </div>
-            <div className="border border-[#D8D3C8] dark:border-[#33312D] bg-black/[0.01] dark:bg-white/[0.01] p-3 rounded-none -m-3">
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total C&I CAD</p>
-              <p className="font-extrabold text-[#2E5E4E] dark:text-[#49826D] text-lg">{n(ciCAD)}</p>
-            </div>
-            <div className="pt-2">
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Taxable INR</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.taxableINR, 2)}</p>
+            <div className="border border-[#D8D6D3] bg-[#FCFCFB] p-3 rounded-none -m-3">
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total C&I CAD</p>
+              <p className="font-extrabold text-[#1C335E] text-lg">{n(ciCAD)}</p>
             </div>
             <div className="pt-2">
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total IGST INR</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.igstINR, 2)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total Taxable INR</p>
+              <p className="font-bold text-[#1C335E] text-base">{n(totals.taxableINR, 2)}</p>
             </div>
             <div className="pt-2">
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Net Wt (kg)</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.netWt, 3)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total IGST INR</p>
+              <p className="font-bold text-[#1C335E] text-base">{n(totals.igstINR, 2)}</p>
             </div>
             <div className="pt-2">
-              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Gross Wt (kg)</p>
-              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.grossWt, 3)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total Net Wt (kg)</p>
+              <p className="font-bold text-[#1C335E] text-base">{n(totals.netWt, 3)}</p>
+            </div>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#6F7B8E] uppercase tracking-wider mb-1">Total Gross Wt (kg)</p>
+              <p className="font-bold text-[#1C335E] text-base">{n(totals.grossWt, 3)}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Submit ── */}
-      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
-        <button type="submit" disabled={isSubmitting}
-          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D6D3]">
+        <button type="submit" disabled={isSubmitting} className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all disabled:opacity-50">
           {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Invoice"}
         </button>
         <button type="button" onClick={() => router.back()}
-          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+          className="inline-flex items-center justify-center rounded-none border border-[#D8D6D3] bg-transparent px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#6F7B8E] hover:bg-black/5 transition-all">
           Cancel
         </button>
       </div>

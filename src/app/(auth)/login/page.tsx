@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Logo from "@/components/logo";
+
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
@@ -45,22 +47,17 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 bg-[#FCFCFB] text-[#1C335E]">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-2xl space-y-8 py-8">
         {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto border border-[#1C335E] text-[#1C335E] bg-transparent w-12 h-12 rounded-none flex items-center justify-center text-xl font-serif font-bold mb-6">
-            K
-          </div>
-          <h1 className="text-3xl font-serif font-bold text-[#1C335E]">
-            Kohlico Invoices
-          </h1>
-          <p className="mt-2 text-xs font-mono uppercase tracking-wider text-[#6F7B8E]">
+        <div>
+          <Logo layout="full" className="rounded-none border border-[#D8D6D3] bg-[#F7F5F2]" />
+          <p className="mt-4 text-center text-xs font-mono uppercase tracking-wider text-[#6F7B8E]">
             Exporter ledger authorization
           </p>
         </div>
 
         {/* Card */}
-        <div className="border border-[#D8D6D3] p-8 sm:p-10 rounded-none bg-[#F7F5F2]">
+        <div className="max-w-md mx-auto w-full border border-[#D8D6D3] p-8 sm:p-10 rounded-none bg-[#F7F5F2]">
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
             {serverError && (
               <div className="rounded-none bg-[#EF4444]/10 px-4 py-2.5 text-xs text-[#EF4444] border border-[#EF4444]/20 font-mono">

@@ -13,54 +13,12 @@ export default async function DashboardPage() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  // Fetch recent invoices and data for summary stats
-  const [recentInvoices, invoicesForStats] = await Promise.all([
-    db.invoice.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      include: { consignee: { select: { name: true } } },
-    }),
-    db.invoice.findMany({
-      select: {
-        status: true,
-        invoiceDate: true,
-        insuranceCAD: true,
-        items: {
-          select: {
-            fobCAD: true,
-          },
-        },
-      },
-    }),
-  ]);
-
-  // Compute summary stats quietly
-  let outstandingAmount = 0;
-  let draftCount = 0;
-  let paidCount = 0;
-  let overdueCount = 0;
-
-  for (const inv of invoicesForStats) {
-    const itemsTotal = inv.items.reduce((sum, item) => sum + item.fobCAD, 0);
-    const totalCAD = itemsTotal + (inv.insuranceCAD ?? 0);
-    
-    if (inv.status === "final") {
-      paidCount++;
-    } else {
-      draftCount++;
-      outstandingAmount += totalCAD;
-      if (new Date(inv.invoiceDate) < thirtyDaysAgo) {
-        overdueCount++;
-      }
-    }
-  }
-
-  const formatCAD = (val: number) => {
-    return `C$ ${val.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
+  // Fetch recent invoices
+  const recentInvoices = await db.invoice.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { consignee: { select: { name: true } } },
+  });
 
   return (
     <div className="space-y-12">
@@ -95,26 +53,6 @@ export default async function DashboardPage() {
           >
             <span>+ Product</span>
           </Link>
-        </div>
-      </div>
-
-      {/* Quiet stats metadata below header */}
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-2 py-4 border-b border-[#D8D6D3] text-xs font-mono text-[#6F7B8E]">
-        <div>
-          <span className="text-[10px] uppercase tracking-wider font-sans font-semibold text-[#6F7B8E]/80 mr-2">Outstanding CAD:</span>
-          <span className="text-[#1C335E] font-bold">{formatCAD(outstandingAmount)}</span>
-        </div>
-        <div>
-          <span className="text-[10px] uppercase tracking-wider font-sans font-semibold text-[#6F7B8E]/80 mr-2">Overdue CAD Count:</span>
-          <span className="text-[#EF4444] font-bold">{overdueCount}</span>
-        </div>
-        <div>
-          <span className="text-[10px] uppercase tracking-wider font-sans font-semibold text-[#6F7B8E]/80 mr-2">Draft Invoices:</span>
-          <span className="text-[#F59E0B] font-bold">{draftCount}</span>
-        </div>
-        <div>
-          <span className="text-[10px] uppercase tracking-wider font-sans font-semibold text-[#6F7B8E]/80 mr-2">Paid/Finalized:</span>
-          <span className="text-[#22C55E] font-bold">{paidCount}</span>
         </div>
       </div>
 

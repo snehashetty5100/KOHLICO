@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const {
     description,
+    category,
     hsCode,
     defaultPackaging,
     defaultRate,
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
   const product = await db.product.create({
     data: {
       description,
+      category: category || null,
       hsCode,
       defaultPackaging: defaultPackaging || null,
       defaultRate: parseFloat(defaultRate),

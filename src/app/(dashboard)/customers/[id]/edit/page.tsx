@@ -8,9 +8,10 @@ import CustomerForm from "@/components/customer-form";
 export default async function EditCustomerPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const customer = await db.customer.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const customer = await db.customer.findUnique({ where: { id } });
 
   if (!customer) notFound();
 

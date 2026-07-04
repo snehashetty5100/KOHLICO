@@ -14,7 +14,7 @@ export async function PUT(
 
   const body = await req.json();
   const {
-    description, hsCode, defaultPackaging,
+    description, category, hsCode, defaultPackaging,
     defaultRate, defaultNetWeight, defaultGrossWeight, igstRate,
   } = body;
 
@@ -28,7 +28,7 @@ export async function PUT(
   const product = await db.product.update({
     where: { id },
     data: {
-      description, hsCode,
+      description, category: category || null, hsCode,
       defaultPackaging: defaultPackaging || null,
       defaultRate: parseFloat(defaultRate),
       defaultNetWeight: parseFloat(defaultNetWeight),

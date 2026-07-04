@@ -5,23 +5,60 @@ import { db } from "@/lib/db";
 import Link from "next/link";
 import DeleteProductButton from "./delete-button";
 
+function formatCategoryName(cat: string) {
+  if (!cat) return "";
+  if (cat.toUpperCase() === "ALL") return "All Products";
+  return cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
+}
+
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; cat?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, cat } = await searchParams;
   const query = q?.trim() || "";
+  const activeCategory = cat?.trim() || "ALL";
+
+  // Fetch all distinct categories for filters
+  const distinctCategoriesRes = await db.product.findMany({
+    select: {
+      category: true,
+    },
+    distinct: ["category"],
+  });
+
+  const rawCategories = distinctCategoriesRes
+    .map((p) => p.category?.trim() || "")
+    .filter(Boolean);
+
+  // Case-insensitive unique list
+  const uniqueCategories = Array.from(new Set(rawCategories.map((c) => c.toUpperCase())))
+    .map((upperCat) => {
+      const original = rawCategories.find((c) => c.toUpperCase() === upperCat);
+      return original || upperCat;
+    });
+
+  const sortedCategories = ["ALL", ...uniqueCategories.sort()];
+
+  // Build prisma where clause
+  const whereClause: any = {};
+
+  if (query) {
+    whereClause.OR = [
+      { description: { contains: query } },
+      { hsCode: { contains: query } },
+    ];
+  }
+
+  if (activeCategory.toUpperCase() !== "ALL") {
+    whereClause.category = {
+      equals: activeCategory,
+    };
+  }
 
   const products = await db.product.findMany({
-    where: query
-      ? {
-          OR: [
-            { description: { contains: query } },
-            { hsCode: { contains: query } },
-          ],
-        }
-      : undefined,
+    where: whereClause,
     orderBy: { description: "asc" },
   });
 
@@ -43,35 +80,79 @@ export default async function ProductsPage({
         </Link>
       </div>
 
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-[#D8D6D3] pb-4">
+        {sortedCategories.map((catName) => {
+          const isActive = catName === activeCategory;
+          const displayLabel = formatCategoryName(catName);
+
+          return (
+            <Link
+              key={catName}
+              href={{
+                pathname: "/products",
+                query: {
+                  ...(query ? { q: query } : {}),
+                  cat: catName,
+                },
+              }}
+              className={`inline-flex items-center justify-center rounded-none px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all border ${
+                isActive
+                  ? "bg-[#1C335E] text-white border-[#1C335E]"
+                  : "border-[#D8D6D3] text-[#6F7B8E] bg-transparent hover:text-[#1C335E] hover:border-[#1C335E]"
+              }`}
+            >
+              {displayLabel}
+            </Link>
+          );
+        })}
+      </div>
+
       {/* Active search filter details */}
-      {query && products.length > 0 && (
+      {query && (
         <div className="flex items-center justify-between bg-[#F7F5F2] border border-[#D8D6D3] px-4 py-2.5 text-xs text-[#1C335E] font-mono rounded-none">
           <span>
-            SHOWING SEARCH RESULTS FOR: <span className="font-bold">"{query}"</span> ({products.length} {products.length === 1 ? "match" : "matches"} found)
+            SHOWING SEARCH RESULTS FOR: <span className="font-bold">"{query}"</span>
+            {activeCategory !== "ALL" && (
+              <span> IN CATEGORY: <span className="font-bold">"{formatCategoryName(activeCategory)}"</span></span>
+            )}
+            {` (${products.length} ${products.length === 1 ? "match" : "matches"} found)`}
           </span>
-          <Link href="/products" className="font-semibold text-[#E28924] hover:underline uppercase tracking-wider font-sans">
+          <Link
+            href={{
+              pathname: "/products",
+              query: {
+                ...(activeCategory !== "ALL" ? { cat: activeCategory } : {}),
+              },
+            }}
+            className="font-semibold text-[#E28924] hover:underline uppercase tracking-wider font-sans"
+          >
             Clear Search
           </Link>
         </div>
       )}
 
-      {/* Table */}
+      {/* Table / Empty State */}
       {products.length === 0 ? (
-        <div className="border border-dashed border-[#D8D6D3] p-12 text-center">
+        <div className="border border-dashed border-[#D8D6D3] p-12 text-center bg-transparent">
           <p className="text-sm font-serif text-[#1C335E] mb-2">
-            {query ? "No Search Results" : "No Products Yet"}
+            No Products Found
           </p>
           <p className="text-xs text-[#6F7B8E] max-w-sm mx-auto mb-6">
             {query
-              ? `We couldn't find any products matching "${query}".`
+              ? `We couldn't find any products matching "${query}"${
+                  activeCategory !== "ALL" ? ` in the "${formatCategoryName(activeCategory)}" category` : ""
+                }.`
+              : activeCategory !== "ALL"
+              ? `No products found in the "${formatCategoryName(activeCategory)}" category.`
               : "No products yet. Click above to add one."}
           </p>
-          {query && (
+          {(query || activeCategory !== "ALL") && (
             <Link
               href="/products"
               className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-5 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all"
             >
-              <span>Clear Search</span>
+              <span>Show All Products</span>
             </Link>
           )}
         </div>
@@ -81,6 +162,7 @@ export default async function ProductsPage({
             <thead>
               <tr className="border-b border-[#D8D6D3] text-xs font-semibold text-[#6F7B8E] uppercase tracking-wider">
                 <th className="py-3 pr-4">Description</th>
+                {activeCategory === "ALL" && <th className="py-3 px-4">Category</th>}
                 <th className="py-3 px-4">HS Code</th>
                 <th className="py-3 px-4">Packaging</th>
                 <th className="py-3 px-4 text-right">Rate (CAD)</th>
@@ -99,6 +181,11 @@ export default async function ProductsPage({
                   <td className="py-3 pr-4 font-bold text-[#1C335E]">
                     {p.description}
                   </td>
+                  {activeCategory === "ALL" && (
+                    <td className="py-3 px-4 text-xs text-[#E28924] font-semibold font-mono">
+                      {p.category ? formatCategoryName(p.category) : "GENERAL"}
+                    </td>
+                  )}
                   <td className="py-3 px-4 text-[#6F7B8E] font-mono text-xs">
                     {p.hsCode}
                   </td>

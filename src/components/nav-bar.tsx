@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import Logo from "@/components/logo";
 
 interface NavBarProps {
   user: {
@@ -56,8 +57,8 @@ export default function NavBar({ user }: NavBarProps) {
     <>
       {/* Mobile Top Header (hidden on large screens) */}
       <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#FCFCFB] border-b border-[#D8D6D3] w-full">
-        <Link href="/dashboard" className="text-lg font-serif font-bold text-[#1C335E] tracking-tight">
-          KOHLICO
+        <Link href="/dashboard">
+          <Logo layout="simple" />
         </Link>
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -92,11 +93,8 @@ export default function NavBar({ user }: NavBarProps) {
         <div className="space-y-12">
           {/* Logo */}
           <div className="hidden lg:block">
-            <Link
-              href="/dashboard"
-              className="text-2xl font-serif font-bold text-white tracking-tight hover:opacity-90"
-            >
-              KOHLICO
+            <Link href="/dashboard" className="hover:opacity-90 block">
+              <Logo layout="simple" light />
             </Link>
           </div>
 

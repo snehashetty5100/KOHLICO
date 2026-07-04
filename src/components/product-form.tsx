@@ -10,6 +10,7 @@ import { z } from "zod";
 
 const productSchema = z.object({
   description: z.string().min(1, "Description is required"),
+  category: z.string().optional(),
   hsCode: z.string().min(1, "HS Code is required"),
   defaultPackaging: z.string().optional(),
   defaultRate: z
@@ -44,6 +45,7 @@ interface ProductFormProps {
   defaultValues?: {
     id: string;
     description: string;
+    category?: string | null;
     hsCode: string;
     defaultPackaging?: string | null;
     defaultRate: number;
@@ -67,6 +69,7 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
     resolver: zodResolver(productSchema),
     defaultValues: {
       description: defaultValues?.description ?? "",
+      category: defaultValues?.category ?? "",
       hsCode: defaultValues?.hsCode ?? "",
       defaultPackaging: defaultValues?.defaultPackaging ?? "",
       defaultRate: defaultValues?.defaultRate?.toString() ?? "",
@@ -121,6 +124,23 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
         {errors.description && (
           <p className="mt-1 text-xs text-[#EF4444] font-mono">
             {errors.description.message}
+          </p>
+        )}
+      </div>
+
+      {/* Category */}
+      <div>
+        <label className={labelCls}>
+          Category
+        </label>
+        <input
+          {...register("category")}
+          className="w-full"
+          placeholder="e.g. SPICES"
+        />
+        {errors.category && (
+          <p className="mt-1 text-xs text-[#EF4444] font-mono">
+            {errors.category.message}
           </p>
         )}
       </div>

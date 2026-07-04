@@ -8,9 +8,10 @@ import ProductForm from "@/components/product-form";
 export default async function EditProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const product = await db.product.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const product = await db.product.findUnique({ where: { id } });
 
   if (!product) notFound();
 

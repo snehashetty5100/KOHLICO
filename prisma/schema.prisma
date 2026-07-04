@@ -106,6 +106,7 @@ model Customer {
 model Product {
   id                 String   @id @default(cuid())
   description        String   // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
+  category           String?  // e.g. "SPICES"
   hsCode             String   // e.g. "21069099"
   defaultPackaging   String?  // e.g. "20 X 400 GM"
   defaultRate        Float    // FOB CAD per package (default)

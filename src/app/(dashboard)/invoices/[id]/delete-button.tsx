@@ -21,7 +21,7 @@ export default function DeleteInvoiceButton({ id }: { id: string }) {
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+      className="rounded-none border border-[#C1443C] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#C1443C] hover:bg-[#C1443C]/5 dark:text-[#E8655E] dark:border-[#E8655E] dark:hover:bg-[#E8655E]/5 transition-all disabled:opacity-50"
     >
       {loading ? "Deleting…" : "Delete"}
     </button>

@@ -98,22 +98,24 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
     router.refresh();
   }
 
+  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5 max-w-lg">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6 max-w-lg bg-transparent border-0 p-0 shadow-none">
       {error && (
-        <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 border border-red-200">
+        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
           {error}
         </p>
       )}
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Description <span className="text-[#C1443C]">*</span>
         </label>
         <input
           {...register("description")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="e.g. ROASTED CHANA W/H SKIN IN POUCH"
         />
         {errors.description && (
@@ -125,12 +127,12 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
 
       {/* HS Code */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          HS Code <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          HS Code <span className="text-[#C1443C]">*</span>
         </label>
         <input
           {...register("hsCode")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
           placeholder="e.g. 21069099"
         />
         {errors.hsCode && (
@@ -142,12 +144,12 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
 
       {/* Default Packaging */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className={labelCls}>
           Default Packaging
         </label>
         <input
           {...register("defaultPackaging")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="e.g. 20 X 400 GM"
         />
         {errors.defaultPackaging && (
@@ -159,14 +161,14 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
 
       {/* Default Rate (FOB CAD) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Default Rate (FOB CAD / package) <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Default Rate (FOB CAD / package) <span className="text-[#C1443C]">*</span>
         </label>
         <input
           type="number"
           step="0.01"
           {...register("defaultRate")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
           placeholder="e.g. 12.50"
         />
         {errors.defaultRate && (
@@ -178,14 +180,14 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
 
       {/* Net Weight */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Default Net Weight (kg / package) <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Default Net Weight (kg / package) <span className="text-[#C1443C]">*</span>
         </label>
         <input
           type="number"
           step="0.001"
           {...register("defaultNetWeight")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
           placeholder="e.g. 8.00"
         />
         {errors.defaultNetWeight && (
@@ -197,14 +199,14 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
 
       {/* Gross Weight */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Default Gross Weight (kg / package) <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Default Gross Weight (kg / package) <span className="text-[#C1443C]">*</span>
         </label>
         <input
           type="number"
           step="0.001"
           {...register("defaultGrossWeight")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
           placeholder="e.g. 8.50"
         />
         {errors.defaultGrossWeight && (
@@ -216,14 +218,14 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
 
       {/* IGST Rate */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          IGST Rate <span className="text-gray-400 font-normal">(default 0.05 = 5%)</span>
+        <label className={labelCls}>
+          IGST Rate <span className="text-[#7A756B] dark:text-[#9E998F] font-normal font-mono">(default 0.05 = 5%)</span>
         </label>
         <input
           type="number"
           step="0.01"
           {...register("igstRate")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
         />
         {errors.igstRate && (
           <p className="mt-1 text-xs text-red-600">
@@ -233,18 +235,18 @@ export default function ProductForm({ defaultValues }: ProductFormProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
         >
           {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Product"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-md border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
         >
           Cancel
         </button>

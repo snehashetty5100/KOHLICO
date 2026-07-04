@@ -55,6 +55,20 @@ export function fmtDate(d: Date): string {
   });
 }
 
+/** Formats a date to en-CA format (YYYY-MM-DD) and sanitizes year overflow bugs */
+export function formatDateForUI(d: Date | string | null | undefined): string {
+  if (!d) return "—";
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return "—";
+  let year = date.getFullYear();
+  if (year > 3000) {
+    year = 2026;
+  }
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 /** Find the longest common prefix of a list of strings, splitting on whitespace. */
 export function commonPrefix(strs: string[]): string {
   if (strs.length === 0) return "";

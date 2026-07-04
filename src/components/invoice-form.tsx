@@ -226,19 +226,19 @@ export default function InvoiceForm({
       status: defaultValues?.status ?? "draft",
       items: defaultValues?.items.length
         ? defaultValues.items.map((it) => ({
-            productId: it.productId ?? "",
-            description: it.description,
-            hsCode: it.hsCode,
-            packageDescription: it.packageDescription,
-            marksAndNos: it.marksAndNos ?? "",
-            quantity: it.quantity.toString(),
-            rate: it.rate.toString(),
-            netWeight: it.netWeight.toString(),
-            grossWeight: it.grossWeight.toString(),
-            igstRate: it.igstRate.toString(),
-            district: it.district ?? "",
-            state: it.state ?? "",
-          }))
+          productId: it.productId ?? "",
+          description: it.description,
+          hsCode: it.hsCode,
+          packageDescription: it.packageDescription,
+          marksAndNos: it.marksAndNos ?? "",
+          quantity: it.quantity.toString(),
+          rate: it.rate.toString(),
+          netWeight: it.netWeight.toString(),
+          grossWeight: it.grossWeight.toString(),
+          igstRate: it.igstRate.toString(),
+          district: it.district ?? "",
+          state: it.state ?? "",
+        }))
         : [blankItem()],
     },
   });
@@ -346,24 +346,23 @@ export default function InvoiceForm({
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
-  const inputCls =
-    "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const labelCls = "block text-xs font-medium text-gray-600 mb-1";
+  const inputCls = "w-full disabled:opacity-50";
+  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8 font-sans">
       {error && (
-        <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 border border-red-200">
+        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
           {error}
         </p>
       )}
 
       {/* ── Section 1: Invoice Identity ── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Invoice Details
         </h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           <div>
             <label className={labelCls}>Invoice No *</label>
             <input className={inputCls} {...register("invoiceNo")} placeholder="KF/1902/25-26" />
@@ -396,11 +395,11 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 2: Exporter Details ── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Exporter Details
         </h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           <div>
             <label className={labelCls}>IEC Code *</label>
             <input className={inputCls} {...register("iecCode")} />
@@ -433,11 +432,11 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 3: Parties ── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Parties
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Consignee *</label>
             <select className={inputCls} {...register("consigneeId")}>
@@ -466,11 +465,11 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 4: Shipping ── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Shipping Details
         </h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
           <div>
             <label className={labelCls}>Pre-Carriage *</label>
             <input className={inputCls} {...register("preCarriage")} placeholder="BY SEA" />
@@ -529,7 +528,7 @@ export default function InvoiceForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-2">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
           <div className="sm:col-span-2">
             <label className={labelCls}>Terms of Delivery *</label>
             <input className={inputCls} {...register("termsOfDelivery")} placeholder="C & I CAD $ BY SEA" />
@@ -555,13 +554,13 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 5: Line Items ── */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <div className="flex items-center justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-3">
+          <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-serif">
             Line Items
           </h2>
           <button type="button" onClick={() => append(blankItem())}
-            className="rounded-md bg-blue-50 border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100">
+            className="inline-flex items-center justify-center gap-1.5 rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all">
             + Add Item
           </button>
         </div>
@@ -571,13 +570,13 @@ export default function InvoiceForm({
             const item = itemsWatch?.[idx];
             const calc = calcItem(item);
             return (
-              <div key={field.id} className="rounded-lg border border-gray-200 p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">Item [{idx + 1}]</span>
+              <div key={idx} className="border border-[#D8D3C8] dark:border-[#33312D] p-6 space-y-5 bg-transparent rounded-none">
+                <div className="flex items-center justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-2">
+                  <span className="text-[10px] font-mono font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider">Item {idx + 1}</span>
                   {fields.length > 1 && (
                     <button type="button" onClick={() => remove(idx)}
-                      className="text-xs text-red-600 hover:underline">
-                      Remove
+                      className="text-xs font-semibold text-[#C1443C] dark:text-[#E8655E] hover:underline uppercase tracking-wider">
+                      Remove Item
                     </button>
                   )}
                 </div>
@@ -654,7 +653,7 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Qty / Rate / Weights */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 border-t border-[#D8D3C8] dark:border-[#33312D] pt-4">
                   <div>
                     <label className={labelCls}>Qty (pkgs) *</label>
                     <input
@@ -727,26 +726,26 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Calculated row */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 rounded-lg bg-blue-50 p-3 text-sm">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 border border-[#D8D3C8] dark:border-[#33312D] p-4 text-xs mt-3 font-mono bg-transparent rounded-none">
                   <div>
-                    <p className="text-xs text-gray-500">FOB CAD</p>
-                    <p className="font-semibold text-gray-900">{n(calc.fobCAD)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">FOB CAD</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.fobCAD)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Taxable INR</p>
-                    <p className="font-semibold text-gray-900">{n(calc.taxableINR, 2)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Taxable INR</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.taxableINR, 2)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">IGST (INR)</p>
-                    <p className="font-semibold text-gray-900">{n(calc.igstINR, 2)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">IGST (INR)</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.igstINR, 2)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Total Net Wt (kg)</p>
-                    <p className="font-semibold text-gray-900">{n(calc.totalNetWt, 3)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Net Wt (kg)</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.totalNetWt, 3)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Total Gross Wt (kg)</p>
-                    <p className="font-semibold text-gray-900">{n(calc.totalGrossWt, 3)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Gross Wt (kg)</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.totalGrossWt, 3)}</p>
                   </div>
                 </div>
               </div>
@@ -755,53 +754,53 @@ export default function InvoiceForm({
         </div>
 
         {/* ── Totals ── */}
-        <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 mt-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Invoice Totals</h3>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-sm">
+        <div className="border border-[#D8D3C8] dark:border-[#33312D] bg-transparent p-6 mt-8 rounded-none">
+          <h3 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-4 border-b border-[#D8D3C8] dark:border-[#33312D] pb-2 font-serif">Invoice Totals</h3>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 text-sm font-mono">
             <div>
-              <p className="text-xs text-gray-500">Total Pkgs</p>
-              <p className="font-semibold text-gray-900">{totals.pkgs}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Pkgs</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{totals.pkgs}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Total FOB CAD</p>
-              <p className="font-semibold text-gray-900">{n(totals.fobCAD)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total FOB CAD</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.fobCAD)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Insurance (CAD)</p>
-              <p className="font-semibold text-gray-900">{n(insCAD)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Insurance (CAD)</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(insCAD)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Total C&I CAD</p>
-              <p className="font-bold text-blue-700">{n(ciCAD)}</p>
+            <div className="border border-[#D8D3C8] dark:border-[#33312D] bg-black/[0.01] dark:bg-white/[0.01] p-3 rounded-none -m-3">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total C&I CAD</p>
+              <p className="font-extrabold text-[#2E5E4E] dark:text-[#49826D] text-lg">{n(ciCAD)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Total Taxable INR</p>
-              <p className="font-semibold text-gray-900">{n(totals.taxableINR, 2)}</p>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Taxable INR</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.taxableINR, 2)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Total IGST INR</p>
-              <p className="font-semibold text-gray-900">{n(totals.igstINR, 2)}</p>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total IGST INR</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.igstINR, 2)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Total Net Wt (kg)</p>
-              <p className="font-semibold text-gray-900">{n(totals.netWt, 3)}</p>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Net Wt (kg)</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.netWt, 3)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Total Gross Wt (kg)</p>
-              <p className="font-semibold text-gray-900">{n(totals.grossWt, 3)}</p>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Gross Wt (kg)</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.grossWt, 3)}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Submit ── */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
         <button type="submit" disabled={isSubmitting}
-          className="rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50">
           {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Invoice"}
         </button>
         <button type="button" onClick={() => router.back()}
-          className="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all">
           Cancel
         </button>
       </div>

@@ -3,6 +3,7 @@
 
 import { db } from "@/lib/db";
 import Link from "next/link";
+import { formatDateForUI } from "@/lib/invoice-shared";
 
 export default async function InvoicesPage() {
   const invoices = await db.invoice.findMany({
@@ -13,65 +14,102 @@ export default async function InvoicesPage() {
     },
   });
 
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-baseline justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-6">
+        <div>
+          <h1 className="text-3xl font-serif font-bold text-[#1C2B33] dark:text-[#F7F5F1]">Ledger Entries</h1>
+          <p className="mt-1.5 text-xs text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-mono">
+            Archived and active shipping invoices
+          </p>
+        </div>
         <Link
           href="/invoices/new"
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-all"
         >
-          + New Invoice
+          <span>+ New Entry</span>
         </Link>
       </div>
 
+      {/* Main content table */}
       {invoices.length === 0 ? (
-        <p className="text-gray-500 text-sm">No invoices yet. Create one above.</p>
+        <div className="border border-dashed border-[#D8D3C8] dark:border-[#384F5B] py-16 px-4 text-center bg-transparent">
+          <p className="text-sm font-serif text-[#1C2B33] dark:text-[#F7F5F1] mb-2">No Ledger Entries</p>
+          <p className="text-xs text-[#7A756B] dark:text-[#9E998F] max-w-sm mx-auto mb-6">
+            There are no shipping invoices recorded in the system.
+          </p>
+          <Link
+            href="/invoices/new"
+            className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all"
+          >
+            <span>+ Record First Invoice</span>
+          </Link>
+        </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Invoice No</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Date</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Consignee</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Destination</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Items</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
-                <th className="px-4 py-3" />
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-[#D8D3C8] dark:border-[#33312D] text-xs font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider">
+                <th className="py-3.5 px-4">Invoice No</th>
+                <th className="py-3.5 px-4">Consignee</th>
+                <th className="py-3.5 px-4">Destination</th>
+                <th className="py-3.5 px-4 text-right">Post Date</th>
+                <th className="py-3.5 px-4 text-right">Items</th>
+                <th className="py-3.5 px-4 text-right">Status</th>
+                <th className="py-3.5 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {invoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{inv.invoiceNo}</td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {new Date(inv.invoiceDate).toLocaleDateString("en-IN")}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{inv.consignee.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{inv.finalDestination}</td>
-                  <td className="px-4 py-3 text-gray-600">{inv._count.items}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        inv.status === "final"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/invoices/${inv.id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-[#D8D3C8] dark:divide-[#33312D]">
+              {invoices.map((inv) => {
+                const isFinal = inv.status === "final";
+                const isOverdue = !isFinal && new Date(inv.invoiceDate) < thirtyDaysAgo;
+                const statusLabel = isFinal ? "[PAID]" : isOverdue ? "[OVERDUE]" : "[DRAFT]";
+                const statusColor = isFinal 
+                  ? "text-[#2E5E4E] dark:text-[#49826D]" 
+                  : isOverdue 
+                    ? "text-[#C1443C] dark:text-[#E8655E]" 
+                    : "text-[#7A756B]";
+
+                return (
+                  <tr
+                    key={inv.id}
+                    className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-150"
+                  >
+                    <td className="py-3.5 px-4 font-mono font-bold text-[#1C2B33] dark:text-[#F7F5F1]">
+                      {inv.invoiceNo}
+                    </td>
+                    <td className="py-3.5 px-4 font-medium text-[#1C2B33] dark:text-[#F7F5F1] max-w-[200px] truncate">
+                      {inv.consignee.name}
+                    </td>
+                    <td className="py-3.5 px-4 text-[#7A756B] dark:text-[#9E998F] max-w-[150px] truncate">
+                      {inv.finalDestination}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-[#7A756B] dark:text-[#9E998F] font-mono text-xs">
+                      {formatDateForUI(inv.invoiceDate)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-[#7A756B] dark:text-[#9E998F] font-mono text-xs">
+                      {inv._count.items}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <span className={`font-mono text-xs font-semibold tracking-wider ${statusColor}`}>
+                        {statusLabel}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <Link
+                        href={`/invoices/${inv.id}`}
+                        className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                      >
+                        Review
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -78,22 +78,24 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
     router.refresh();
   }
 
+  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5 max-w-lg">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6 max-w-lg bg-transparent border-0 p-0 shadow-none">
       {error && (
-        <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 border border-red-200">
+        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
           {error}
         </p>
       )}
 
       {/* Name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Name <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Name <span className="text-[#C1443C]">*</span>
         </label>
         <input
           {...register("name")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="e.g. ABC Imports Ltd."
         />
         {errors.name && (
@@ -105,13 +107,13 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
 
       {/* Address */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Address <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Address <span className="text-[#C1443C]">*</span>
         </label>
         <textarea
           {...register("address")}
           rows={3}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="Full address"
         />
         {errors.address && (
@@ -123,12 +125,12 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
 
       {/* Country */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Country <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Country <span className="text-[#C1443C]">*</span>
         </label>
         <input
           {...register("country")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="e.g. CANADA"
         />
         {errors.country && (
@@ -140,12 +142,12 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
 
       {/* Contact Person */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className={labelCls}>
           Contact Person
         </label>
         <input
           {...register("contactPerson")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full"
           placeholder="Optional"
         />
         {errors.contactPerson && (
@@ -157,12 +159,12 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
 
       {/* Phone */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className={labelCls}>
           Phone
         </label>
         <input
           {...register("phone")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
           placeholder="Optional"
         />
         {errors.phone && (
@@ -174,13 +176,13 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
 
       {/* Email */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className={labelCls}>
           Email
         </label>
         <input
           type="email"
           {...register("email")}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full font-mono text-xs"
           placeholder="Optional"
         />
         {errors.email && (
@@ -191,18 +193,18 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
         >
           {isSubmitting ? "Saving…" : isEditing ? "Save Changes" : "Create Customer"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-md border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
         >
           Cancel
         </button>

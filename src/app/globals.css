@@ -1,39 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
+  --color-primary-50: #f4f7f5;
+  --color-primary-100: #e7ede9;
+  --color-primary-200: #cfded5;
+  --color-primary-500: var(--accent);
+  --color-primary-600: #244b3e;
+  --color-primary-700: #1a352c;
+  --color-primary-800: #10221c;
+  --color-primary-900: #070e0c;
+
+  --color-brass: var(--brass);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+:root {
+  --background: #F7F5F1;
+  --foreground: #1C2B33;
+  --muted: #7A756B;
+  --border: #D8D3C8;
+  --accent: #2E5E4E;
+  --brass: #B8874A;
+  --alert: #C1443C;
+
+  --font-serif: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: var(--font-sans), sans-serif;
+  --font-mono: var(--font-mono), monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1C2B33;
+    --foreground: #F7F5F1;
+    --muted: #7A756B;
+    --border: #384F5B;
+    --accent: #49826D;
+    --brass: #D2A66E;
+    --alert: #E8655E;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure typed text in form fields is always dark/readable on white backgrounds,
-   regardless of dark-mode CSS variable inheritance. */
-input,
-select,
-textarea {
-  color: #000000 !important; /* black — always readable */
+/* Paper Ledger utilities */
+@layer utilities {
+  .glass-card {
+    @apply border-b border-solid border-[#D8D3C8] dark:border-[#33312D] bg-transparent transition-all duration-100;
+  }
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: #9ca3af !important; /* gray-400 — subtle placeholder text */
+/* Underline Form Inputs Override (Paper ledger style) */
+input, select, textarea {
+  @apply bg-transparent border-t-0 border-l-0 border-r-0 border-b border-solid border-[#D8D3C8] dark:border-[#33312D] text-[#1C2B33] dark:text-[#F7F5F1] rounded-none px-2 py-1.5 text-sm transition-all duration-100 focus:border-[#2E5E4E] dark:focus:border-[#49826D] focus:ring-1 focus:ring-[#2E5E4E]/20 focus:outline-none disabled:opacity-50;
+}
+
+/* Accessible focus outline for keyboard navigation */
+*:focus-visible {
+  outline: 1px solid #2E5E4E !important;
+  outline-offset: 2px;
+}
+
+input[type="date"] {
+  @apply font-mono;
+}
+
+input::placeholder, textarea::placeholder {
+  @apply text-[#7A756B] opacity-60;
+}
+
+/* Near-zero motion button overrides */
+button, a {
+  @apply transition-opacity duration-100 ease-in-out hover:opacity-85 active:opacity-100;
+}
+
+/* Monospace font settings for data rows */
+.mono-align {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Scrollbar for Ledger theme */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
 }

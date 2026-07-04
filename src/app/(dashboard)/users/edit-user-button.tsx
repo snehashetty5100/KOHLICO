@@ -90,8 +90,9 @@ export default function EditUserButton({ user, currentUserId }: EditUserButtonPr
   return (
     <>
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="text-blue-600 hover:underline cursor-pointer"
+        className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
       >
         Edit
       </button>

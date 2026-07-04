@@ -102,7 +102,7 @@ export default async function UsersPage() {
                           />
 
                           {u.id === session.user.id ? (
-                            <span className="text-xs text-[#7A756B] font-semibold px-2 uppercase tracking-wider font-mono">
+                            <span className="inline-flex items-center justify-center border border-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider font-mono text-[#7A756B]">
                               [YOU]
                             </span>
                           ) : (

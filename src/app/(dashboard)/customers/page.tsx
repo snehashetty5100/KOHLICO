@@ -65,14 +65,16 @@ export default async function CustomersPage() {
                   <td className="py-3 px-4 text-[#7A756B] dark:text-[#9E998F] font-mono text-xs">
                     {c.phone ?? "—"}
                   </td>
-                  <td className="py-3 pl-4 text-right space-x-3">
-                    <Link
-                      href={`/customers/${c.id}/edit`}
-                      className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all mr-1"
-                    >
-                      Edit
-                    </Link>
-                    <DeleteCustomerButton id={c.id} />
+                  <td className="py-3 pl-4 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/customers/${c.id}/edit`}
+                        className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                      >
+                        Edit
+                      </Link>
+                      <DeleteCustomerButton id={c.id} />
+                    </div>
                   </td>
                 </tr>
               ))}

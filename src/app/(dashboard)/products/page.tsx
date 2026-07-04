@@ -73,14 +73,16 @@ export default async function ProductsPage() {
                   <td className="py-3 px-4 text-right font-mono text-xs text-[#7A756B] dark:text-[#9E998F]">
                     {(p.igstRate * 100).toFixed(0)}%
                   </td>
-                  <td className="py-3 pl-4 text-right space-x-3">
-                    <Link
-                      href={`/products/${p.id}/edit`}
-                      className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all mr-1"
-                    >
-                      Edit
-                    </Link>
-                    <DeleteProductButton id={p.id} />
+                  <td className="py-3 pl-4 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/products/${p.id}/edit`}
+                        className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                      >
+                        Edit
+                      </Link>
+                      <DeleteProductButton id={p.id} />
+                    </div>
                   </td>
                 </tr>
               ))}

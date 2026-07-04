@@ -20,7 +20,7 @@ export default function DeleteCustomerButton({ id }: { id: string }) {
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-red-600 hover:underline disabled:opacity-50"
+      className="inline-flex items-center justify-center rounded-none border border-[#C1443C] dark:border-[#E8655E] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#C1443C] dark:text-[#E8655E] hover:bg-[#C1443C]/5 dark:hover:bg-[#E8655E]/5 transition-all disabled:opacity-50"
     >
       {loading ? "Deleting…" : "Delete"}
     </button>

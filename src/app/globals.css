@@ -1,81 +1,102 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-300: #a5b4fc;
-  --color-primary-400: #818cf8;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-800: #3730a3;
-  --color-primary-900: #312e81;
+  --color-primary-50: #f4f7f5;
+  --color-primary-100: #e7ede9;
+  --color-primary-200: #cfded5;
+  --color-primary-500: var(--accent);
+  --color-primary-600: #244b3e;
+  --color-primary-700: #1a352c;
+  --color-primary-800: #10221c;
+  --color-primary-900: #070e0c;
 
+  --color-brass: var(--brass);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 :root {
-  --background: #f7f7f8;
-  --foreground: #0b0e14;
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --background: #F7F5F1;
+  --foreground: #1C2B33;
+  --muted: #7A756B;
+  --border: #D8D3C8;
+  --accent: #2E5E4E;
+  --brass: #B8874A;
+  --alert: #C1443C;
+
+  --font-serif: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: var(--font-sans), sans-serif;
+  --font-mono: var(--font-mono), monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0e14;
-    --foreground: #f7f7f8;
-    --card-bg: #111827;
-    --card-border: #1f2937;
-    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --background: #1C2B33;
+    --foreground: #F7F5F1;
+    --muted: #7A756B;
+    --border: #384F5B;
+    --accent: #49826D;
+    --brass: #D2A66E;
+    --alert: #E8655E;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Premium Card Utility */
+/* Paper Ledger utilities */
 @layer utilities {
-  .glass {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/50 shadow-sm;
-  }
   .glass-card {
-    @apply bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-none rounded-2xl transition-all duration-200;
+    @apply border-b border-solid border-[#D8D3C8] dark:border-[#33312D] bg-transparent transition-all duration-100;
   }
 }
 
-/* Premium Form Inputs Override */
+/* Underline Form Inputs Override (Paper ledger style) */
 input, select, textarea {
-  @apply bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 rounded-xl px-4 py-2.5 text-sm transition-all duration-150 focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none;
+  @apply bg-transparent border-t-0 border-l-0 border-r-0 border-b border-solid border-[#D8D3C8] dark:border-[#33312D] text-[#1C2B33] dark:text-[#F7F5F1] rounded-none px-2 py-1.5 text-sm transition-all duration-100 focus:border-[#2E5E4E] dark:focus:border-[#49826D] focus:ring-1 focus:ring-[#2E5E4E]/20 focus:outline-none disabled:opacity-50;
+}
+
+/* Accessible focus outline for keyboard navigation */
+*:focus-visible {
+  outline: 1px solid #2E5E4E !important;
+  outline-offset: 2px;
+}
+
+input[type="date"] {
+  @apply font-mono;
 }
 
 input::placeholder, textarea::placeholder {
-  @apply text-gray-400 dark:text-gray-500;
+  @apply text-[#7A756B] opacity-60;
 }
 
-/* Smooth Transitions & Interactions */
+/* Near-zero motion button overrides */
 button, a {
-  @apply transition-all duration-150 ease-in-out active:scale-[0.98];
+  @apply transition-opacity duration-100 ease-in-out hover:opacity-85 active:opacity-100;
 }
 
-/* Custom Scrollbar for Premium Feel */
+/* Monospace font settings for data rows */
+.mono-align {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Scrollbar for Ledger theme */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700;
+  background: var(--border);
 }

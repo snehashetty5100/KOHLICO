@@ -67,33 +67,35 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
     router.refresh();
   }
 
+  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg glass-card p-6 sm:p-8 rounded-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg bg-transparent border-0 p-0 shadow-none">
       {error && (
-        <p className="rounded-xl bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/50">
+        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
           {error}
         </p>
       )}
 
       {/* Name */}
       <div>
-        <label className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5">
-          Name <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Name <span className="text-[#C1443C]">*</span>
         </label>
         <input
           name="name"
           value={form.name}
           onChange={handleChange}
           required
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+          className="w-full"
           placeholder="e.g. ABC Imports Ltd."
         />
       </div>
 
       {/* Address */}
       <div>
-        <label className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5">
-          Address <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Address <span className="text-[#C1443C]">*</span>
         </label>
         <textarea
           name="address"
@@ -101,57 +103,57 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           onChange={handleChange}
           required
           rows={3}
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+          className="w-full"
           placeholder="Full address"
         />
       </div>
 
       {/* Country */}
       <div>
-        <label className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5">
-          Country <span className="text-red-500">*</span>
+        <label className={labelCls}>
+          Country <span className="text-[#C1443C]">*</span>
         </label>
         <input
           name="country"
           value={form.country}
           onChange={handleChange}
           required
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+          className="w-full"
           placeholder="e.g. CANADA"
         />
       </div>
 
       {/* Contact Person */}
       <div>
-        <label className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5">
+        <label className={labelCls}>
           Contact Person
         </label>
         <input
           name="contactPerson"
           value={form.contactPerson}
           onChange={handleChange}
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+          className="w-full"
           placeholder="Optional"
         />
       </div>
 
       {/* Phone */}
       <div>
-        <label className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5">
+        <label className={labelCls}>
           Phone
         </label>
         <input
           name="phone"
           value={form.phone}
           onChange={handleChange}
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+          className="w-full font-mono text-xs"
           placeholder="Optional"
         />
       </div>
 
       {/* Email */}
       <div>
-        <label className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5">
+        <label className={labelCls}>
           Email
         </label>
         <input
@@ -159,24 +161,24 @@ export default function CustomerForm({ defaultValues }: CustomerFormProps) {
           type="email"
           value={form.email}
           onChange={handleChange}
-          className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+          className="w-full font-mono text-xs"
           placeholder="Optional"
         />
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-900">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-primary-500 transition-all disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
         >
           {loading ? "Saving…" : isEditing ? "Save Changes" : "Create Customer"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-5 py-2.5 text-sm font-semibold text-gray-750 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
+          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
         >
           Cancel
         </button>

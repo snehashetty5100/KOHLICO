@@ -44,26 +44,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 bg-gray-50/50 dark:bg-[#0b0e14]">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-[#F7F5F1] dark:bg-[#1C2B33] text-[#1C2B33] dark:text-[#F7F5F1]">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto bg-primary-600 text-white w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold shadow-md mb-6">
+          <div className="mx-auto border border-[#1C2B33] dark:border-[#F7F5F1] text-[#1C2B33] dark:text-[#F7F5F1] bg-transparent w-12 h-12 rounded-none flex items-center justify-center text-xl font-serif font-bold mb-6">
             K
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-950 dark:text-white">
+          <h1 className="text-3xl font-serif font-bold text-[#1C2B33] dark:text-[#F7F5F1]">
             Kohlico Invoices
           </h1>
-          <p className="mt-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
-            Sign in to your billing account to continue
+          <p className="mt-2 text-xs font-mono uppercase tracking-wider text-[#7A756B] dark:text-[#9E998F]">
+            Exporter ledger authorization
           </p>
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8 sm:p-10 rounded-2xl">
+        <div className="border border-[#D8D3C8] dark:border-[#33312D] p-8 sm:p-10 rounded-none bg-transparent">
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
             {serverError && (
-              <div className="rounded-xl bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/50">
+              <div className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
                 {serverError}
               </div>
             )}
@@ -72,20 +72,20 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
+                className="block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5"
               >
-                Email address
+                Email Address
               </label>
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
                 {...register("email")}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 outline-none disabled:opacity-50"
+                className="w-full font-mono text-xs"
                 placeholder="you@example.com"
               />
               {errors.email && (
-                <p className="mt-1.5 text-xs text-red-650 dark:text-red-400 font-semibold">{errors.email.message}</p>
+                <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">{errors.email.message}</p>
               )}
             </div>
 
@@ -93,7 +93,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
+                className="block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5"
               >
                 Password
               </label>
@@ -102,11 +102,11 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 {...register("password")}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-3 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 outline-none disabled:opacity-50"
+                className="w-full font-mono text-xs"
                 placeholder="••••••••"
               />
               {errors.password && (
-                <p className="mt-1.5 text-xs text-red-655 dark:text-red-400 font-semibold">
+                <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
                   {errors.password.message}
                 </p>
               )}
@@ -117,9 +117,9 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-xs hover:bg-primary-500 transition-all disabled:opacity-50"
+                className="w-full rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-all disabled:opacity-50"
               >
-                {isSubmitting ? "Signing in…" : "Sign in"}
+                {isSubmitting ? "Verifying Credentials…" : "Authorize Session"}
               </button>
             </div>
           </form>

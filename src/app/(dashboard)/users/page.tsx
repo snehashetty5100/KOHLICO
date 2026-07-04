@@ -32,11 +32,11 @@ export default async function UsersPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="border-b border-gray-100 dark:border-gray-900 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-950 dark:text-white">
+      <div className="border-b border-[#D8D3C8] dark:border-[#33312D] pb-6">
+        <h1 className="text-3xl font-serif font-bold text-[#1C2B33] dark:text-[#F7F5F1]">
           User Management
         </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1.5 text-xs text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-mono">
           Manage team member accounts and administrative permissions.
         </p>
       </div>
@@ -46,56 +46,55 @@ export default async function UsersPage() {
 
       {/* Users table */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold tracking-tight text-gray-950 dark:text-white">
-          Active Users
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1]">
+          Active Accounts
         </h2>
 
         {users.length === 0 ? (
-          <p className="text-gray-500 text-sm">No users found.</p>
+          <p className="text-xs text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-mono">No accounts recorded.</p>
         ) : (
-          <div className="overflow-hidden glass-card">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-900 text-sm">
-                <thead>
-                  <tr className="bg-gray-50/50 dark:bg-gray-900/10 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Role</th>
-                    <th className="px-6 py-4">Created</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-[#D8D3C8] dark:border-[#33312D] text-xs font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider">
+                  <th className="py-3 pr-4">Email</th>
+                  <th className="py-3 px-4">Name</th>
+                  <th className="py-3 px-4">Role</th>
+                  <th className="py-3 px-4">Created Date</th>
+                  <th className="py-3 pl-4 text-right">Actions</th>
+                </tr>
+              </thead>
 
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-900 bg-white dark:bg-gray-950/20">
-                  {users.map((u) => (
+              <tbody className="divide-y divide-[#D8D3C8] dark:divide-[#33312D]">
+                {users.map((u) => {
+                  const isAdmin = u.role === "admin";
+                  const roleLabel = isAdmin ? "[ADMIN]" : "[STAFF]";
+                  const roleColor = isAdmin ? "text-[#2E5E4E] dark:text-[#49826D]" : "text-[#7A756B]";
+
+                  return (
                     <tr
                       key={u.id}
-                      className="hover:bg-gray-50/80 dark:hover:bg-gray-900/30 transition-colors"
+                      className="hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors duration-100"
                     >
-                      <td className="px-6 py-4 font-mono font-bold text-gray-950 dark:text-white">
+                      <td className="py-3 pr-4 font-mono font-bold text-[#1C2B33] dark:text-[#F7F5F1]">
                         {u.email}
                       </td>
 
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400 font-medium">
+                      <td className="py-3 px-4 text-[#1C2B33] dark:text-[#F7F5F1]">
                         {u.name ?? "—"}
                       </td>
 
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${u.role === "admin"
-                              ? "bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-400 border-primary-200/50 dark:border-primary-900/50"
-                              : "bg-gray-50 text-gray-700 dark:bg-gray-950/20 dark:text-gray-400 border-gray-200/50 dark:border-gray-800/50"
-                            }`}
-                        >
-                          {u.role}
+                      <td className="py-3 px-4">
+                        <span className={`font-mono text-xs font-semibold tracking-wider ${roleColor}`}>
+                          {roleLabel}
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400 font-mono">
+                      <td className="py-3 px-4 text-[#7A756B] dark:text-[#9E998F] font-mono text-xs">
                         {new Date(u.createdAt).toLocaleDateString("en-CA")}
                       </td>
 
-                      <td className="px-6 py-4 text-right">
+                      <td className="py-3 pl-4 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <EditUserButton
                             user={u}
@@ -103,8 +102,8 @@ export default async function UsersPage() {
                           />
 
                           {u.id === session.user.id ? (
-                            <span className="text-xs text-gray-400 font-semibold">
-                              You
+                            <span className="text-xs text-[#7A756B] font-semibold px-2 uppercase tracking-wider font-mono">
+                              [YOU]
                             </span>
                           ) : (
                             <DeleteUserButton id={u.id} email={u.email} />
@@ -112,10 +111,10 @@ export default async function UsersPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

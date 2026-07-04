@@ -59,20 +59,22 @@ export default function CreateUserForm() {
     router.refresh();
   }
 
+  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
+
   return (
-    <div className="glass-card p-6">
-      <h2 className="text-lg font-bold tracking-tight text-gray-950 dark:text-white mb-4">
-        Create new user
+    <div className="border border-[#D8D3C8] dark:border-[#33312D] p-6 bg-transparent rounded-none">
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] mb-4">
+        Record New User Account
       </h2>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         {serverError && (
-          <div className="rounded-xl bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/50">
+          <div className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
             {serverError}
           </div>
         )}
         {success && (
-          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/20 px-4 py-2.5 text-sm text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/50">
+          <div className="rounded-none bg-[#2E5E4E]/10 dark:bg-[#49826D]/10 px-4 py-2.5 text-xs text-[#2E5E4E] dark:text-[#49826D] border border-[#2E5E4E]/20 dark:border-[#49826D]/20 font-mono">
             {success}
           </div>
         )}
@@ -82,7 +84,7 @@ export default function CreateUserForm() {
           <div>
             <label
               htmlFor="create-email"
-              className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
+              className={labelCls}
             >
               Email
             </label>
@@ -91,11 +93,11 @@ export default function CreateUserForm() {
               type="email"
               autoComplete="off"
               {...register("email")}
-              className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+              className="w-full font-mono text-xs"
               placeholder="user@example.com"
             />
             {errors.email && (
-              <p className="mt-1 text-xs text-red-650 dark:text-red-400 font-medium">
+              <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
                 {errors.email.message}
               </p>
             )}
@@ -105,7 +107,7 @@ export default function CreateUserForm() {
           <div>
             <label
               htmlFor="create-password"
-              className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
+              className={labelCls}
             >
               Password
             </label>
@@ -114,11 +116,11 @@ export default function CreateUserForm() {
               type="password"
               autoComplete="new-password"
               {...register("password")}
-              className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+              className="w-full font-mono text-xs"
               placeholder="Min. 8 characters"
             />
             {errors.password && (
-              <p className="mt-1 text-xs text-red-655 dark:text-red-400 font-medium">
+              <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
                 {errors.password.message}
               </p>
             )}
@@ -128,33 +130,33 @@ export default function CreateUserForm() {
           <div>
             <label
               htmlFor="create-role"
-              className="block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5"
+              className={labelCls}
             >
               Role
             </label>
             <select
               id="create-role"
               {...register("role")}
-              className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-955 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none"
+              className="w-full"
             >
-              <option value="user">User</option>
+              <option value="user">User / Staff</option>
               <option value="admin">Admin</option>
             </select>
             {errors.role && (
-              <p className="mt-1 text-xs text-red-650 dark:text-red-400 font-medium">
+              <p className="mt-1.5 text-xs text-[#C1443C] dark:text-[#E8655E] font-semibold font-mono">
                 {errors.role.message}
               </p>
             )}
           </div>
         </div>
 
-        <div className="pt-2 border-t border-gray-100 dark:border-gray-900">
+        <div className="pt-2 border-t border-[#D8D3C8] dark:border-[#33312D]">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-primary-500 transition-all disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-5 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
           >
-            {isSubmitting ? "Creating…" : "Create user"}
+            {isSubmitting ? "Registering…" : "Register Account"}
           </button>
         </div>
       </form>

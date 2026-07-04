@@ -294,21 +294,20 @@ export default function InvoiceForm({
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
-  const inputCls =
-    "w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-955 px-4 py-2.5 text-sm transition-all focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 focus:outline-none disabled:opacity-50 disabled:bg-gray-50/30";
-  const labelCls = "block text-xs font-semibold text-gray-950 dark:text-gray-300 mb-1.5";
+  const inputCls = "w-full disabled:opacity-50";
+  const labelCls = "block text-[10px] font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1.5";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8 font-sans">
       {error && (
-        <p className="rounded-xl bg-red-50 dark:bg-red-950/20 px-4 py-2.5 text-sm text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-900/50">
+        <p className="rounded-none bg-[#C1443C]/10 dark:bg-[#E8655E]/10 px-4 py-2.5 text-xs text-[#C1443C] dark:text-[#E8655E] border border-[#C1443C]/20 dark:border-[#E8655E]/20 font-mono">
           {error}
         </p>
       )}
 
       {/* ── Section 1: Invoice Identity ── */}
-      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
-        <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-b border-gray-100 dark:border-gray-900 pb-3">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Invoice Details
         </h2>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
@@ -337,8 +336,8 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 2: Exporter Details ── */}
-      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
-        <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-b border-gray-100 dark:border-gray-900 pb-3">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Exporter Details
         </h2>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
@@ -367,8 +366,8 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 3: Parties ── */}
-      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
-        <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-b border-gray-100 dark:border-gray-900 pb-3">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Parties
         </h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -396,8 +395,8 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 4: Shipping ── */}
-      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
-        <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-b border-gray-100 dark:border-gray-900 pb-3">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider border-b border-[#D8D3C8] dark:border-[#33312D] pb-3 font-serif">
           Shipping Details
         </h2>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
@@ -443,7 +442,7 @@ export default function InvoiceForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-4 border-t border-gray-100 dark:border-gray-900">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
           <div className="sm:col-span-2">
             <label className={labelCls}>Terms of Delivery *</label>
             <input className={inputCls} required value={header.termsOfDelivery}
@@ -464,13 +463,13 @@ export default function InvoiceForm({
       </section>
 
       {/* ── Section 5: Line Items ── */}
-      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-3">
-          <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+      <section className="border border-[#D8D3C8] dark:border-[#33312D] p-6 sm:p-8 rounded-none bg-transparent space-y-6">
+        <div className="flex items-center justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-3">
+          <h2 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider font-serif">
             Line Items
           </h2>
           <button type="button" onClick={addItem}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-955 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all">
+            className="inline-flex items-center justify-center gap-1.5 rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all">
             + Add Item
           </button>
         </div>
@@ -479,12 +478,12 @@ export default function InvoiceForm({
           {items.map((item, idx) => {
             const calc = calcItem(item);
             return (
-              <div key={idx} className="rounded-2xl border border-gray-200 dark:border-gray-800 p-6 space-y-5 bg-gray-50/20 dark:bg-gray-900/10">
-                <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-2">
-                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 px-3 py-1 rounded-xl font-mono">Item {idx + 1}</span>
+              <div key={idx} className="border border-[#D8D3C8] dark:border-[#33312D] p-6 space-y-5 bg-transparent rounded-none">
+                <div className="flex items-center justify-between border-b border-[#D8D3C8] dark:border-[#33312D] pb-2">
+                  <span className="text-[10px] font-mono font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider">Item {idx + 1}</span>
                   {items.length > 1 && (
                     <button type="button" onClick={() => removeItem(idx)}
-                      className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors">
+                      className="text-xs font-semibold text-[#C1443C] dark:text-[#E8655E] hover:underline uppercase tracking-wider">
                       Remove Item
                     </button>
                   )}
@@ -530,7 +529,7 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Qty / Rate / Weights */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 border-t border-gray-100 dark:border-gray-900 pt-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 border-t border-[#D8D3C8] dark:border-[#33312D] pt-4">
                   <div>
                     <label className={labelCls}>Qty (pkgs) *</label>
                     <input type="number" min="1" className={inputCls} required value={item.quantity}
@@ -559,26 +558,26 @@ export default function InvoiceForm({
                 </div>
 
                 {/* Calculated row */}
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 rounded-xl bg-gray-50/50 dark:bg-gray-900/10 border border-gray-200/80 dark:border-gray-800/80 p-4 text-xs mt-3 font-mono">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 border border-[#D8D3C8] dark:border-[#33312D] p-4 text-xs mt-3 font-mono bg-transparent rounded-none">
                   <div>
-                    <p className="font-semibold text-gray-500 dark:text-gray-400">FOB CAD</p>
-                    <p className="font-bold text-primary-600 dark:text-primary-400 text-base">{n(calc.fobCAD)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">FOB CAD</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.fobCAD)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-500 dark:text-gray-400">Taxable INR</p>
-                    <p className="font-bold text-gray-900 dark:text-white text-base">{n(calc.taxableINR, 2)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Taxable INR</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.taxableINR, 2)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-500 dark:text-gray-400">IGST (INR)</p>
-                    <p className="font-bold text-gray-900 dark:text-white text-base">{n(calc.igstINR, 2)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">IGST (INR)</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.igstINR, 2)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-500 dark:text-gray-400">Net Wt (kg)</p>
-                    <p className="font-bold text-gray-950 dark:text-gray-250 text-base">{n(calc.totalNetWt, 3)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Net Wt (kg)</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.totalNetWt, 3)}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-500 dark:text-gray-400">Gross Wt (kg)</p>
-                    <p className="font-bold text-gray-950 dark:text-gray-250 text-base">{n(calc.totalGrossWt, 3)}</p>
+                    <p className="font-semibold text-[#7A756B] dark:text-[#9E998F] text-[9px] uppercase tracking-wider">Gross Wt (kg)</p>
+                    <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-sm">{n(calc.totalGrossWt, 3)}</p>
                   </div>
                 </div>
               </div>
@@ -587,53 +586,53 @@ export default function InvoiceForm({
         </div>
 
         {/* ── Totals ── */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/10 p-6 mt-8">
-          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-900 pb-2">Invoice Totals</h3>
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 text-sm">
+        <div className="border border-[#D8D3C8] dark:border-[#33312D] bg-transparent p-6 mt-8 rounded-none">
+          <h3 className="text-xs font-bold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-4 border-b border-[#D8D3C8] dark:border-[#33312D] pb-2 font-serif">Invoice Totals</h3>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 text-sm font-mono">
             <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Pkgs</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{totals.pkgs}</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total FOB CAD</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{n(totals.fobCAD)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Pkgs</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{totals.pkgs}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Insurance (CAD)</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{n(insCAD)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total FOB CAD</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.fobCAD)}</p>
             </div>
-            <div className="bg-primary-50/50 dark:bg-primary-950/20 border border-primary-200/50 dark:border-primary-900/50 p-3 rounded-xl -m-3">
-              <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 mb-1">Total C&I CAD</p>
-              <p className="font-extrabold font-mono text-primary-700 dark:text-primary-400 text-xl">{n(ciCAD)}</p>
+            <div>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Insurance (CAD)</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(insCAD)}</p>
             </div>
-            <div className="pt-2">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Taxable INR</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{n(totals.taxableINR, 2)}</p>
-            </div>
-            <div className="pt-2">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total IGST INR</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{n(totals.igstINR, 2)}</p>
+            <div className="border border-[#D8D3C8] dark:border-[#33312D] bg-black/[0.01] dark:bg-white/[0.01] p-3 rounded-none -m-3">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total C&I CAD</p>
+              <p className="font-extrabold text-[#2E5E4E] dark:text-[#49826D] text-lg">{n(ciCAD)}</p>
             </div>
             <div className="pt-2">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Net Wt (kg)</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{n(totals.netWt, 3)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Taxable INR</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.taxableINR, 2)}</p>
             </div>
             <div className="pt-2">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Total Gross Wt (kg)</p>
-              <p className="font-bold font-mono text-gray-955 dark:text-white text-lg">{n(totals.grossWt, 3)}</p>
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total IGST INR</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.igstINR, 2)}</p>
+            </div>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Net Wt (kg)</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.netWt, 3)}</p>
+            </div>
+            <div className="pt-2">
+              <p className="text-[10px] font-sans font-semibold text-[#7A756B] dark:text-[#9E998F] uppercase tracking-wider mb-1">Total Gross Wt (kg)</p>
+              <p className="font-bold text-[#1C2B33] dark:text-[#F7F5F1] text-base">{n(totals.grossWt, 3)}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Submit ── */}
-      <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-900">
+      <div className="flex gap-3 pt-4 border-t border-[#D8D3C8] dark:border-[#33312D]">
         <button type="submit" disabled={loading}
-          className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-primary-500 transition-all disabled:opacity-50">
+          className="inline-flex items-center justify-center rounded-none bg-[#1C2B33] dark:bg-[#F7F5F1] text-[#F7F5F1] dark:text-[#1C2B33] border border-[#1C2B33] dark:border-[#F7F5F1] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50">
           {loading ? "Saving…" : isEditing ? "Save Changes" : "Create Invoice"}
         </button>
         <button type="button" onClick={() => router.back()}
-          className="inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-6 py-2.5 text-sm font-semibold text-gray-750 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all">
+          className="inline-flex items-center justify-center rounded-none border border-[#1C2B33] dark:border-[#F7F5F1] bg-transparent px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C2B33] dark:text-[#F7F5F1] hover:bg-black/5 dark:hover:bg-white/5 transition-all">
           Cancel
         </button>
       </div>

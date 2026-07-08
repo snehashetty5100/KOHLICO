@@ -22,7 +22,7 @@ export async function GET(
     },
   });
 
-  if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!invoice || invoice.deletedAt) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const buffer = await buildInvoiceExcel({
     invoiceNo: invoice.invoiceNo,

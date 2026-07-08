@@ -15,6 +15,7 @@ export default async function DashboardPage() {
 
   // Fetch recent invoices
   const recentInvoices = await db.invoice.findMany({
+    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     take: 5,
     include: { consignee: { select: { name: true } } },

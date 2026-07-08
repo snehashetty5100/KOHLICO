@@ -60,7 +60,7 @@ model VerificationToken {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  password  String   // bcrypt hashed
+  password  String // bcrypt hashed
   name      String
   role      String   @default("user") // "admin" | "user"
   createdAt DateTime @default(now())
@@ -71,7 +71,8 @@ model User {
   sessions Session[]
 
   // App relations
-  invoices Invoice[]
+  invoices  Invoice[]
+  auditLogs InvoiceAuditLog[]
 
   @@map("users")
 }
@@ -105,16 +106,16 @@ model Customer {
 
 model Product {
   id                 String   @id @default(cuid())
-  description        String   // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
-  category           String?  // e.g. "SPICES"
-  hsCode             String   // e.g. "21069099"
-  defaultPackaging   String?  // e.g. "20 X 400 GM"
-  defaultRate        Float    // FOB CAD per package (default)
-  defaultNetWeight   Float    // kg per package (default)
-  defaultGrossWeight Float    // kg per package (default)
+  description        String // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
+  category           String? // e.g. "SPICES"
+  hsCode             String // e.g. "21069099"
+  defaultPackaging   String? // e.g. "20 X 400 GM"
+  defaultRate        Float // FOB CAD per package (default)
+  defaultNetWeight   Float // kg per package (default)
+  defaultGrossWeight Float // kg per package (default)
   igstRate           Float    @default(0.05) // 5% for exports
-  originDistrict     String?  // e.g. "THANE" — origin district for export docs
-  originState        String?  // e.g. "MAHARASHTRA" — origin state for export docs
+  originDistrict     String? // e.g. "THANE" — origin district for export docs
+  originState        String? // e.g. "MAHARASHTRA" — origin state for export docs
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -128,50 +129,52 @@ model Product {
 // ─────────────────────────────────────────────
 
 model Invoice {
-  id              String    @id @default(cuid())
-  invoiceNo       String    @unique // e.g. "KF/1902/25-26"
-  invoiceDate     DateTime
-  proformaInvNo   String?   // optional proforma reference
-  proformaDate    DateTime?
+  id            String    @id @default(cuid())
+  invoiceNo     String    @unique // e.g. "KF/1902/25-26"
+  invoiceDate   DateTime
+  proformaInvNo String? // optional proforma reference
+  proformaDate  DateTime?
 
   // Exporter legal details (usually company constants, but stored per invoice
   // so historical records are self-contained even if company details change)
-  iecCode  String // Importer-Exporter Code
-  panNo    String
-  gstinNo  String
+  iecCode    String // Importer-Exporter Code
+  panNo      String
+  gstinNo    String
   endUseCode String? // e.g. "FSH100, GNX100"
 
   // Parties
   consigneeId String
-  consignee   Customer @relation("Consignee", fields: [consigneeId], references: [id])
-  buyerId     String?  // null = same as consignee
+  consignee   Customer  @relation("Consignee", fields: [consigneeId], references: [id])
+  buyerId     String? // null = same as consignee
   buyer       Customer? @relation("Buyer", fields: [buyerId], references: [id])
 
   // Shipping details
-  preCarriage      String  // e.g. "BY SEA"
-  portOfReceipt    String  // e.g. "JNPT"
+  preCarriage      String // e.g. "BY SEA"
+  portOfReceipt    String // e.g. "JNPT"
   vesselFlight     String?
-  portOfLoading    String  // e.g. "JNPT"
-  portOfDischarge  String  // e.g. "VANCOUVER"
-  finalDestination String  // e.g. "VANCOUVER"
+  portOfLoading    String // e.g. "JNPT"
+  portOfDischarge  String // e.g. "VANCOUVER"
+  finalDestination String // e.g. "VANCOUVER"
 
   countryOfOrigin      String @default("INDIA")
   countryOfDestination String @default("CANADA")
 
   termsOfDelivery String // e.g. "C & I CAD $ BY SEA"
-  exchangeRate    Float  // INR per CAD, e.g. 64.45
+  exchangeRate    Float // INR per CAD, e.g. 64.45
 
   // Totals (some may be derived; stored for historical accuracy on PDF)
   insuranceCAD Float? // overall insurance in CAD (optional)
 
-  status    String   @default("draft") // "draft" | "final"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    String    @default("draft") // "draft" | "final"
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft delete — null = active, set = "deleted" from the user's perspective
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
 
-  items InvoiceItem[]
+  items     InvoiceItem[]
+  auditLogs InvoiceAuditLog[]
 
   @@map("invoices")
 }
@@ -181,7 +184,7 @@ model Invoice {
 // ─────────────────────────────────────────────
 
 model InvoiceItem {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
@@ -189,14 +192,14 @@ model InvoiceItem {
   product   Product? @relation(fields: [productId], references: [id])
 
   // Fields on the actual invoice (may differ from product defaults)
-  description        String  // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
-  hsCode             String  // e.g. "21069099"
-  packageDescription String  // e.g. "20 X 400 GM"
+  description        String // e.g. "ROASTED CHANA W/H SKIN IN POUCH"
+  hsCode             String // e.g. "21069099"
+  packageDescription String // e.g. "20 X 400 GM"
   marksAndNos        String? // e.g. "KFBPL/VANCOUVER CTNS NO."
 
-  quantity   Int   // number of packages (cartons / bags)
-  rate       Float // FOB CAD per package
-  fobCAD     Float // = quantity × rate  (stored for immutability)
+  quantity Int // number of packages (cartons / bags)
+  rate     Float // FOB CAD per package
+  fobCAD   Float // = quantity × rate  (stored for immutability)
 
   netWeight   Float // total net weight for this line (kg)
   grossWeight Float // total gross weight for this line (kg)
@@ -213,4 +216,20 @@ model InvoiceItem {
   sortOrder Int @default(0) // display order on the invoice
 
   @@map("invoice_items")
+}
+
+// ─────────────────────────────────────────────
+// INVOICE AUDIT LOGS
+// ─────────────────────────────────────────────
+
+model InvoiceAuditLog {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String // "created" | "updated" | "finalized" | "deleted"
+  createdAt DateTime @default(now())
+
+  @@map("invoice_audit_logs")
 }

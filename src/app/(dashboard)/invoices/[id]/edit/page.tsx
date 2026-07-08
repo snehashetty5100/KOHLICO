@@ -17,6 +17,7 @@ export default async function EditInvoicePage({ params }: {
   ]);
 
   if (!invoice) notFound();
+  if (invoice.deletedAt) redirect("/invoices");
   if (invoice.status === "final") redirect(`/invoices/${id}`);
 
   const defaultValues = {

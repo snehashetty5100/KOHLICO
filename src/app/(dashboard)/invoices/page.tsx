@@ -16,13 +16,14 @@ export default async function InvoicesPage({
   const invoices = await db.invoice.findMany({
     where: query
       ? {
+          deletedAt: null,
           OR: [
             { invoiceNo: { contains: query } },
             { consignee: { name: { contains: query } } },
             { finalDestination: { contains: query } },
           ],
         }
-      : undefined,
+      : { deletedAt: null },
     orderBy: { invoiceDate: "desc" },
     include: {
       consignee: { select: { name: true } },

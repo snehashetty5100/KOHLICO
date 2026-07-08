@@ -19,10 +19,16 @@ export async function GET(
       buyer: true,
       items: { orderBy: { sortOrder: "asc" }, include: { product: true } },
       createdBy: { select: { name: true, email: true } },
+      auditLogs: {
+        include: { user: { select: { name: true, email: true } } },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
-  if (!invoice) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!invoice || invoice.deletedAt) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json(invoice);
 }
@@ -38,11 +44,30 @@ export async function PUT(
   const body = await req.json();
 
   if (body.status && Object.keys(body).length === 1) {
-    const invoice = await db.invoice.update({
-      where: { id },
-      data: { status: body.status },
-    });
-    return NextResponse.json(invoice);
+    try {
+      const invoice = await db.$transaction(async (tx) => {
+        const inv = await tx.invoice.update({
+          where: { id },
+          data: { status: body.status },
+        });
+
+        await tx.invoiceAuditLog.create({
+          data: {
+            invoiceId: inv.id,
+            userId: session.user.id,
+            action: body.status === "finalized" ? "finalized" : "updated",
+          },
+        });
+
+        return inv;
+      });
+
+      return NextResponse.json(invoice);
+    } catch (err) {
+      console.error("Invoice status update failed:", err);
+      const message = err instanceof Error ? err.message : "Failed to update status";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
   }
 
   const {
@@ -56,6 +81,10 @@ export async function PUT(
     insuranceCAD, status,
     items,
   } = body;
+
+  if (!items || items.length === 0) {
+    return NextResponse.json({ error: "At least one line item is required" }, { status: 400 });
+  }
 
   const rate = parseFloat(exchangeRate);
 
@@ -117,6 +146,14 @@ export async function PUT(
         });
       }
 
+      await tx.invoiceAuditLog.create({
+        data: {
+          invoiceId: inv.id,
+          userId: session.user.id,
+          action: "updated",
+        },
+      });
+
       return inv;
     });
 
@@ -136,6 +173,26 @@ export async function DELETE(
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await db.invoice.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+  try {
+    await db.$transaction(async (tx) => {
+      await tx.invoice.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+
+      await tx.invoiceAuditLog.create({
+        data: {
+          invoiceId: id,
+          userId: session.user.id,
+          action: "deleted",
+        },
+      });
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Invoice delete failed:", err);
+    const message = err instanceof Error ? err.message : "Failed to delete invoice";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

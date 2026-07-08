@@ -12,9 +12,11 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const invoices = await db.invoice.findMany({
+    where: { deletedAt: null },
     orderBy: { invoiceDate: "desc" },
     include: {
       consignee: { select: { name: true } },
+      createdBy: { select: { name: true, email: true } },
       _count: { select: { items: true } },
     },
   });
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
     countryOfOrigin, countryOfDestination,
     termsOfDelivery, exchangeRate,
     insuranceCAD,
-    items, // array of line items
+    items,
   } = body;
 
   if (!invoiceNo || !invoiceDate || !iecCode || !panNo || !gstinNo ||
@@ -107,6 +109,14 @@ export async function POST(req: Request) {
           },
         });
       }
+
+      await tx.invoiceAuditLog.create({
+        data: {
+          invoiceId: inv.id,
+          userId: session.user.id,
+          action: "created",
+        },
+      });
 
       return inv;
     });

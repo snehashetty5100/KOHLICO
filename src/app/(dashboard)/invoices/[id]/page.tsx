@@ -1,8 +1,11 @@
 // src/app/(dashboard)/invoices/[id]/page.tsx
 // Invoice detail view — shows all header info, line items, totals, and actions.
+// Soft-deleted invoices are viewable only by admins, with a clear DELETED banner.
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import FinalizeButton from "./finalize-button";
 import DeleteInvoiceButton from "./delete-button";
@@ -22,6 +25,16 @@ export default async function InvoiceDetailPage({ params }: {
   });
 
   if (!invoice) notFound();
+
+  // Soft-deleted invoices: admin-only read-only view.
+  // Reuses the exact admin-role check pattern from users/page.tsx.
+  const isDeleted = !!invoice.deletedAt;
+  if (isDeleted) {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      redirect("/invoices");
+    }
+  }
 
   // Totals
   const totals = invoice.items.reduce(
@@ -47,6 +60,19 @@ export default async function InvoiceDetailPage({ params }: {
 
   return (
     <div className="space-y-10 font-sans">
+      {/* DELETED banner — visible, unmistakable indicator for admin viewers */}
+      {isDeleted && (
+        <div className="border-2 border-[#EF4444] bg-[#EF4444]/10 px-5 py-4 flex items-center gap-3">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#EF4444] text-white text-sm font-bold flex-shrink-0">✕</span>
+          <div>
+            <p className="text-sm font-bold text-[#EF4444] uppercase tracking-wider">This Invoice Has Been Deleted</p>
+            <p className="text-xs text-[#6F7B8E] mt-0.5">
+              Deleted on {formatDateForUI(invoice.deletedAt!)}. This record is retained for audit purposes and is only visible to administrators.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Breadcrumb + Header row */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#D8D6D3] pb-5">
         <div>
@@ -57,41 +83,49 @@ export default async function InvoiceDetailPage({ params }: {
           </div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-serif font-bold text-[#1C335E]">{invoice.invoiceNo}</h1>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${statusCls}`}>
-              {statusLabel}
-            </span>
+            {isDeleted ? (
+              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20">
+                Deleted
+              </span>
+            ) : (
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${statusCls}`}>
+                {statusLabel}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          {isDraft && (
-            <>
-              <Link
-                href={`/invoices/${invoice.id}/edit`}
-                className="inline-flex items-center justify-center rounded-none border border-[#1C335E] bg-transparent px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C335E] hover:bg-[#1C335E]/5 transition-all"
-              >
-                Edit Draft
-              </Link>
-              <FinalizeButton id={invoice.id} />
-            </>
-          )}
-          <a
-            href={`/api/invoices/${invoice.id}/excel`}
-            className="inline-flex items-center justify-center rounded-none border border-[#1C335E] bg-transparent px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C335E] hover:bg-[#1C335E]/5 transition-all"
-          >
-            Excel Export
-          </a>
-          <a
-            href={`/api/invoices/${invoice.id}/pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all"
-          >
-            PDF Preview
-          </a>
-          <DeleteInvoiceButton id={invoice.id} />
-        </div>
+        {/* Action Buttons — hidden entirely for deleted invoices */}
+        {!isDeleted && (
+          <div className="flex flex-wrap items-center gap-2">
+            {isDraft && (
+              <>
+                <Link
+                  href={`/invoices/${invoice.id}/edit`}
+                  className="inline-flex items-center justify-center rounded-none border border-[#1C335E] bg-transparent px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C335E] hover:bg-[#1C335E]/5 transition-all"
+                >
+                  Edit Draft
+                </Link>
+                <FinalizeButton id={invoice.id} />
+              </>
+            )}
+            <a
+              href={`/api/invoices/${invoice.id}/excel`}
+              className="inline-flex items-center justify-center rounded-none border border-[#1C335E] bg-transparent px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1C335E] hover:bg-[#1C335E]/5 transition-all"
+            >
+              Excel Export
+            </a>
+            <a
+              href={`/api/invoices/${invoice.id}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-none bg-[#1C335E] text-white border border-[#1C335E] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:bg-[#16294C] transition-all"
+            >
+              PDF Preview
+            </a>
+            <DeleteInvoiceButton id={invoice.id} />
+          </div>
+        )}
       </div>
 
       {/* Info grid */}

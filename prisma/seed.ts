@@ -2,15 +2,31 @@
 // Seeds the database with admin user, customers, and all product categories (SPICES, FLOUR, MILLETS, DALS, HERBS, GROCERY, HAWKINS).
 
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-});
+function getPrismaClient() {
+  const url = process.env.DATABASE_URL ?? "";
+  if (url.startsWith("postgres://") || url.startsWith("postgresql://") || url.startsWith("prisma://")) {
+    const pool = new Pool({ connectionString: url });
+    const adapter = new PrismaPg(pool);
+    return new PrismaClient({ adapter });
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
+    const adapter = new PrismaBetterSqlite3({ url: url || "file:./prisma/dev.db" });
+    return new PrismaClient({ adapter });
+  } catch {
+    const pool = new Pool({ connectionString: url || "postgresql://localhost:5432/postgres" });
+    const adapter = new PrismaPg(pool);
+    return new PrismaClient({ adapter });
+  }
+}
 
-const prisma = new PrismaClient({ adapter });
+const prisma = getPrismaClient();
 
 async function main() {
   const email = "admin@kohlico.com";

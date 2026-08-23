@@ -7,11 +7,18 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (session) {
-    redirect("/dashboard");
-  } else {
+    if (session) {
+      redirect("/dashboard");
+    } else {
+      redirect("/login");
+    }
+  } catch (err) {
+    if ((err as Error)?.message?.includes("NEXT_REDIRECT")) {
+      throw err;
+    }
     redirect("/login");
   }
 }

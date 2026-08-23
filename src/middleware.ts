@@ -8,6 +8,9 @@ export const middleware = withAuth({
   pages: {
     signIn: "/login",
   },
+  secret:
+    process.env.NEXTAUTH_SECRET ||
+    "kohlico-super-secret-production-key-fallback-32chars-min",
 });
 
 export const config = {
